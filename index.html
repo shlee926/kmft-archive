@@ -7,8 +7,9 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230D5932'/%3E%3Ccircle cx='50' cy='50' r='28' fill='none' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
 <style>
-/* layout: sticky brand bar + tournament pills → hero → tabs → results/standings/awards/teams panels */
+/* layout: sticky brand bar + tournament pills → hero → tabs → panels (info / results / standings / awards / teams / registration) */
 
 :root {
   --bg: #F7F6F2;
@@ -21,6 +22,7 @@
   --accent: #0D5932;
   --accent-ink: #FFFFFF;
   --accent-weak: #E6EEE9;
+  --accent-strong: #0A4425;
   --gold: #B88A1A;
   --silver: #8A94A3;
   --bronze: #A86735;
@@ -29,6 +31,7 @@
   --young: #15803D;
   --veteran: #C2410C;
   --score-ink: #0A1F3B;
+  --danger: #B91C1C;
   --f-display: "Noto Sans KR", system-ui, -apple-system, sans-serif;
   --f-body: "Noto Sans KR", system-ui, -apple-system, sans-serif;
   --f-numeric: "Oswald", "Noto Sans KR", system-ui, sans-serif;
@@ -49,6 +52,7 @@
     --accent: #4ADE80;
     --accent-ink: #0A1D12;
     --accent-weak: #0E1E16;
+    --accent-strong: #16A34A;
     --gold: #E6B429;
     --silver: #A9B3C2;
     --bronze: #D08A54;
@@ -57,6 +61,7 @@
     --young: #22C55E;
     --veteran: #F97316;
     --score-ink: #BFDBFE;
+    --danger: #F87171;
     color-scheme: dark;
   }
 }
@@ -72,6 +77,7 @@
   --accent: #4ADE80;
   --accent-ink: #0A1D12;
   --accent-weak: #0E1E16;
+  --accent-strong: #16A34A;
   --gold: #E6B429;
   --silver: #A9B3C2;
   --bronze: #D08A54;
@@ -80,6 +86,7 @@
   --young: #22C55E;
   --veteran: #F97316;
   --score-ink: #BFDBFE;
+  --danger: #F87171;
   color-scheme: dark;
 }
 
@@ -173,12 +180,23 @@ body {
   cursor: pointer;
   letter-spacing: 0.03em;
   white-space: nowrap;
+  position: relative;
 }
 .tour-pill[aria-selected="true"] {
   background: var(--accent);
   color: var(--accent-ink);
   border-color: var(--accent);
 }
+.tour-pill .live-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  margin-right: 5px;
+  vertical-align: middle;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 .theme-toggle {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -225,6 +243,26 @@ body {
   text-transform: uppercase;
   color: var(--fg-muted);
 }
+.registration-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  margin-top: 12px;
+}
+.registration-badge .dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-ink);
+  animation: pulse 1.6s ease-in-out infinite;
+}
 
 .tabs {
   display: flex;
@@ -253,9 +291,117 @@ body {
   border-bottom-color: var(--accent);
   font-weight: 700;
 }
+.tab[hidden] { display: none; }
 
 .panel { padding-block: 28px; min-height: 300px; }
 
+/* === Info panel (notice / rules / venue) === */
+.info-section { margin-bottom: 36px; }
+.info-section:last-child { margin-bottom: 0; }
+.info-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--divider);
+}
+.info-head h2 {
+  font-weight: 700;
+  font-size: 22px;
+  margin: 0;
+}
+.info-head .count {
+  font-family: var(--f-numeric);
+  font-size: 12px;
+  color: var(--fg-muted);
+  letter-spacing: 0.08em;
+}
+.md {
+  color: var(--fg);
+  font-size: 15px;
+  line-height: 1.75;
+}
+.md h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 24px 0 10px;
+  color: var(--fg);
+  letter-spacing: 0.005em;
+}
+.md h2:first-child { margin-top: 0; }
+.md h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 18px 0 6px;
+  color: var(--fg);
+}
+.md p { margin: 8px 0; }
+.md ul, .md ol { margin: 6px 0; padding-left: 22px; }
+.md li { margin: 3px 0; }
+.md strong { color: var(--fg); font-weight: 700; }
+.md hr { border: none; border-top: 1px solid var(--divider); margin: 20px 0; }
+.md blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 2px 14px;
+  margin: 10px 0;
+  color: var(--fg-muted);
+  background: var(--surface);
+}
+.md a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.info-callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 18px 20px;
+}
+
+.venue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+  gap: 16px;
+}
+.venue-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.venue-card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--surface-2);
+  cursor: zoom-in;
+}
+.venue-card figcaption {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--fg-muted);
+  border-top: 1px solid var(--divider);
+}
+
+/* Image lightbox */
+.lightbox {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+  cursor: zoom-out;
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* === Results === */
 .rounds { display: grid; gap: 28px; }
 .round {
   display: grid;
@@ -384,6 +530,7 @@ body {
   letter-spacing: 0.08em;
 }
 
+/* === Standings === */
 .standings-group { margin-bottom: 36px; }
 .standings-head {
   display: flex;
@@ -475,6 +622,7 @@ body {
   line-height: 1.5;
 }
 
+/* === Awards === */
 .awards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
@@ -527,6 +675,7 @@ body {
   margin-top: 2px;
 }
 
+/* === Teams === */
 .teams-section { margin-bottom: 28px; }
 .teams-chips {
   display: flex;
@@ -544,6 +693,191 @@ body {
 }
 .team-chip.med { background: var(--surface-2); color: var(--fg-muted); }
 
+/* === Registration === */
+.reg-intro {
+  background: var(--accent-weak);
+  color: var(--accent-strong);
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  border-radius: var(--r-md);
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.reg-intro strong { color: var(--accent); font-weight: 700; }
+
+:root[data-theme="dark"] .reg-intro,
+:root:not([data-theme="light"]) .reg-intro {
+  color: var(--fg);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .reg-intro {
+    color: var(--fg);
+  }
+}
+
+.reg-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--divider);
+}
+.reg-tab {
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  font-family: var(--f-body);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.reg-tab[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 700;
+}
+
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 24px;
+  max-width: 720px;
+}
+.form-row { margin-bottom: 16px; }
+.form-row label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 6px;
+}
+.form-row label .req { color: var(--danger); margin-left: 2px; }
+.form-row input,
+.form-row select,
+.form-row textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: inherit;
+  font-size: 15px;
+}
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 20%, transparent);
+}
+.form-row .hint {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+.radio-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.radio-opt {
+  flex: 1 1 120px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+.radio-opt:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-weak);
+  color: var(--accent-strong);
+}
+.radio-opt input { accent-color: var(--accent); }
+
+.roster-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.roster-tbl th,
+.roster-tbl td {
+  padding: 6px 4px;
+  text-align: left;
+  font-size: 13px;
+  vertical-align: middle;
+}
+.roster-tbl th {
+  font-weight: 600;
+  color: var(--fg-muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--divider);
+}
+.roster-tbl td input {
+  padding: 7px 9px;
+  font-size: 13px;
+  width: 100%;
+}
+.roster-tbl td.actions {
+  width: 40px;
+  text-align: center;
+}
+.row-del {
+  background: none;
+  border: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: var(--r-sm);
+}
+.row-del:hover { color: var(--danger); background: var(--surface-2); }
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-secondary {
+  background: var(--surface);
+  color: var(--fg);
+  border-color: var(--border);
+}
+.btn-secondary:hover { background: var(--surface-2); }
+
+/* === Footer === */
 .footer-note {
   margin-top: 48px;
   padding: 18px 20px;
@@ -581,10 +915,12 @@ body {
 <div class="wrap">
   <div id="hero" class="hero"></div>
   <div class="tabs" id="tabs" role="tablist">
+    <button class="tab" data-tab="info" role="tab">대회 안내</button>
     <button class="tab" data-tab="results" role="tab">경기 결과</button>
     <button class="tab" data-tab="standings" role="tab">순위표</button>
     <button class="tab" data-tab="awards" role="tab">시상</button>
     <button class="tab" data-tab="teams" role="tab">참가팀</button>
+    <button class="tab" data-tab="register" role="tab">참가 신청</button>
   </div>
   <div id="panel" class="panel"></div>
   <div class="footer-note">
@@ -593,13 +929,18 @@ body {
   </div>
 </div>
 
+<div class="lightbox" id="lightbox" role="dialog" aria-label="이미지 확대 보기">
+  <img id="lightbox-img" alt="">
+</div>
+
 <script>
 // =========================================================
 // State
 // =========================================================
 let tournaments = {};
 let currentTournamentId = null;
-let currentTab = 'results';
+let currentTab = null;
+let currentRegTab = 'team';
 
 const LEAGUE_COLORS = {
   'young-a': 'var(--young-a)',
@@ -636,6 +977,28 @@ function leagueById(t, id) {
   return (t.leagues || []).find(l => l.id === id);
 }
 
+function hasTabContent(t, tab) {
+  if (!t) return false;
+  switch (tab) {
+    case 'info':      return !!(t.notice || t.rules || (t.venueImages && t.venueImages.length));
+    case 'results':   return !!(t.matches && t.matches.length);
+    case 'standings': return !!(t.matches && t.matches.length && t.leagues && t.leagues.length);
+    case 'awards':    return !!(t.awards && Object.keys(t.awards).length);
+    case 'teams':     return !!(t.leagues && t.leagues.length);
+    case 'register':  return !!(t.registration && t.registration.open);
+  }
+  return false;
+}
+
+function firstAvailableTab(t) {
+  const order = ['info', 'results', 'standings', 'awards', 'teams', 'register'];
+  for (const tab of order) if (hasTabContent(t, tab)) return tab;
+  return 'info';
+}
+
+// =========================================================
+// Standings
+// =========================================================
 function h2hResult(matches, leagueId, teamA, teamB) {
   for (const m of matches) {
     if (m.leagueId !== leagueId) continue;
@@ -665,19 +1028,12 @@ function computeStandings(tournament, league) {
     teams[m.home].mp++; teams[m.away].mp++;
     teams[m.home].gf += m.homeScore; teams[m.home].ga += m.awayScore;
     teams[m.away].gf += m.awayScore; teams[m.away].ga += m.homeScore;
-    if (m.homeScore > m.awayScore) {
-      teams[m.home].w++; teams[m.home].pts += 3; teams[m.away].l++;
-    } else if (m.homeScore < m.awayScore) {
-      teams[m.away].w++; teams[m.away].pts += 3; teams[m.home].l++;
-    } else {
-      teams[m.home].d++; teams[m.away].d++;
-      teams[m.home].pts++; teams[m.away].pts++;
-    }
+    if (m.homeScore > m.awayScore) { teams[m.home].w++; teams[m.home].pts += 3; teams[m.away].l++; }
+    else if (m.homeScore < m.awayScore) { teams[m.away].w++; teams[m.away].pts += 3; teams[m.home].l++; }
+    else { teams[m.home].d++; teams[m.away].d++; teams[m.home].pts++; teams[m.away].pts++; }
   }
   const medSet = new Set(league.medStudentTeams || []);
-  const rows = Object.values(teams).map(r => ({
-    ...r, gd: r.gf - r.ga, isMed: medSet.has(r.team),
-  }));
+  const rows = Object.values(teams).map(r => ({ ...r, gd: r.gf - r.ga, isMed: medSet.has(r.team) }));
   rows.sort((a, b) => {
     if (a.isMed !== b.isMed) return a.isMed ? 1 : -1;
     if (b.pts !== a.pts) return b.pts - a.pts;
@@ -688,6 +1044,9 @@ function computeStandings(tournament, league) {
   return rows;
 }
 
+// =========================================================
+// Render
+// =========================================================
 function render() {
   renderTourPills();
   renderHero();
@@ -710,16 +1069,20 @@ function renderTourPills() {
     currentTournamentId = (h && tournaments[h]) ? h : list[0].id;
   }
   for (const t of list) {
+    const isOpen = t.registration && t.registration.open;
     const btn = el('button', {
       class: 'tour-pill',
       role: 'tab',
       'aria-selected': t.id === currentTournamentId ? 'true' : 'false',
       onclick: () => {
         currentTournamentId = t.id;
+        currentTab = null; // reset to first available
         try { location.hash = t.id; } catch {}
         render();
       },
-    }, t.shortName || t.name || t.id);
+    });
+    if (isOpen) btn.appendChild(el('span', { class: 'live-dot', 'aria-label': '접수중' }));
+    btn.appendChild(document.createTextNode(t.shortName || t.name || t.id));
     pills.appendChild(btn);
   }
 }
@@ -737,26 +1100,30 @@ function renderHero() {
   hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
   hero.appendChild(el('h1', { class: 'hero-title' }, t.name));
   const meta = el('div', { class: 'hero-meta' });
-  if (t.date) {
-    meta.appendChild(el('span', {}, [
-      el('span', { class: 'label' }, '일시'),
-      el('b', {}, fmtDate(t.date)),
-    ]));
-  }
-  if (t.venue) {
-    meta.appendChild(el('span', {}, [
-      el('span', { class: 'label' }, '장소'),
-      el('b', {}, t.venue),
-    ]));
-  }
+  if (t.date) meta.appendChild(el('span', {}, [el('span', { class: 'label' }, '일시'), el('b', {}, fmtDate(t.date))]));
+  if (t.venue) meta.appendChild(el('span', {}, [el('span', { class: 'label' }, '장소'), el('b', {}, t.venue)]));
   hero.appendChild(meta);
+  if (t.registration && t.registration.open) {
+    const badge = el('div', { class: 'registration-badge' }, [
+      el('span', { class: 'dot' }),
+      el('span', {}, '참가 접수중' + (t.registration.deadline ? ` · 마감 ${fmtDate(t.registration.deadline)}` : '')),
+    ]);
+    hero.appendChild(badge);
+  }
 }
 
 function renderTabs() {
+  const t = tournaments[currentTournamentId];
+  if (!currentTab || !hasTabContent(t, currentTab)) {
+    currentTab = firstAvailableTab(t);
+  }
   for (const b of document.querySelectorAll('#tabs .tab')) {
-    const on = b.dataset.tab === currentTab;
+    const tab = b.dataset.tab;
+    const has = hasTabContent(t, tab);
+    b.hidden = !has;
+    const on = tab === currentTab;
     b.setAttribute('aria-selected', on ? 'true' : 'false');
-    b.onclick = () => { currentTab = b.dataset.tab; renderTabs(); renderPanel(); };
+    b.onclick = () => { currentTab = tab; renderTabs(); renderPanel(); };
   }
 }
 
@@ -765,12 +1132,80 @@ function renderPanel() {
   panel.innerHTML = '';
   const t = tournaments[currentTournamentId];
   if (!t) return;
-  if (currentTab === 'results') renderResults(panel, t);
+  if (currentTab === 'info') renderInfo(panel, t);
+  else if (currentTab === 'results') renderResults(panel, t);
   else if (currentTab === 'standings') renderStandings(panel, t);
   else if (currentTab === 'awards') renderAwards(panel, t);
   else if (currentTab === 'teams') renderTeams(panel, t);
+  else if (currentTab === 'register') renderRegister(panel, t);
 }
 
+// --- Info panel ---
+function mdHtml(text) {
+  if (!text) return '';
+  if (window.marked) {
+    try { return window.marked.parse(text, { gfm: true, breaks: true }); } catch (e) { console.error(e); }
+  }
+  // Fallback: naive paragraph splitting
+  return text.split(/\n\n+/).map(p => `<p>${p.replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`).join('');
+}
+
+function renderInfo(panel, t) {
+  if (t.notice) {
+    const sec = el('div', { class: 'info-section' });
+    sec.appendChild(el('div', { class: 'info-head' }, [
+      el('h2', {}, '📣 공지사항'),
+    ]));
+    const body = el('div', { class: 'info-callout md' });
+    body.innerHTML = mdHtml(t.notice);
+    sec.appendChild(body);
+    panel.appendChild(sec);
+  }
+  if (t.rules) {
+    const sec = el('div', { class: 'info-section' });
+    sec.appendChild(el('div', { class: 'info-head' }, [
+      el('h2', {}, '📖 대회 요강'),
+    ]));
+    const body = el('div', { class: 'info-callout md' });
+    body.innerHTML = mdHtml(t.rules);
+    sec.appendChild(body);
+    panel.appendChild(sec);
+  }
+  if (t.venueImages && t.venueImages.length) {
+    const sec = el('div', { class: 'info-section' });
+    sec.appendChild(el('div', { class: 'info-head' }, [
+      el('h2', {}, '📍 구장 안내도'),
+    ]));
+    const grid = el('div', { class: 'venue-grid' });
+    for (const img of t.venueImages) {
+      const src = typeof img === 'string' ? img : img.src;
+      const caption = typeof img === 'string' ? '' : (img.caption || '');
+      const fig = el('figure', { class: 'venue-card' });
+      const im = el('img', { src, alt: caption, loading: 'lazy', onclick: () => openLightbox(src) });
+      fig.appendChild(im);
+      if (caption) fig.appendChild(el('figcaption', {}, caption));
+      grid.appendChild(fig);
+    }
+    sec.appendChild(grid);
+    panel.appendChild(sec);
+  }
+}
+
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = src;
+  lb.classList.add('open');
+}
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.lightbox')) {
+    document.getElementById('lightbox').classList.remove('open');
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('open');
+});
+
+// --- Results ---
 function renderResults(panel, t) {
   const matches = t.matches || [];
   if (!matches.length) {
@@ -834,11 +1269,8 @@ function renderMatchCard(m, t) {
     card.appendChild(sc);
   }
 
-  if (m.penaltyWinner) {
-    card.appendChild(el('div', { class: 'penalty-note' }, `승부차기 · ${m.penaltyWinner} 우승`));
-  } else if (m.note) {
-    card.appendChild(el('div', { class: 'penalty-note' }, m.note));
-  }
+  if (m.penaltyWinner) card.appendChild(el('div', { class: 'penalty-note' }, `승부차기 · ${m.penaltyWinner} 우승`));
+  else if (m.note) card.appendChild(el('div', { class: 'penalty-note' }, m.note));
   return card;
 }
 
@@ -851,12 +1283,10 @@ function fmtScorer(s) {
   return [name + tag, mins].filter(Boolean).join(' ');
 }
 
+// --- Standings ---
 function renderStandings(panel, t) {
   const leagues = t.leagues || [];
-  if (!leagues.length) {
-    panel.appendChild(el('div', { class: 'empty' }, '등록된 리그가 없습니다.'));
-    return;
-  }
+  if (!leagues.length) { panel.appendChild(el('div', { class: 'empty' }, '등록된 리그가 없습니다.')); return; }
   for (const lg of leagues) {
     const grp = el('div', { class: 'standings-group' });
     grp.appendChild(el('div', { class: 'standings-head' }, [
@@ -885,12 +1315,8 @@ function renderStandings(panel, t) {
       tr.innerHTML = `
         <td><span class="rank-medal ${medalCls}">${rank}</span></td>
         <td class="team-cell">${escapeHtml(r.team)}${r.isMed ? '<span class="med-badge">의대생</span>' : ''}</td>
-        <td class="num">${r.mp}</td>
-        <td class="num">${r.w}</td>
-        <td class="num">${r.d}</td>
-        <td class="num">${r.l}</td>
-        <td class="num">${r.gf}</td>
-        <td class="num">${r.ga}</td>
+        <td class="num">${r.mp}</td><td class="num">${r.w}</td><td class="num">${r.d}</td><td class="num">${r.l}</td>
+        <td class="num">${r.gf}</td><td class="num">${r.ga}</td>
         <td class="num gd ${gdCls}">${r.gd > 0 ? '+' : ''}${r.gd}</td>
         <td class="pts">${r.pts}</td>`;
       tbody.appendChild(tr);
@@ -908,13 +1334,11 @@ function escapeHtml(s) {
   return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// --- Awards ---
 function renderAwards(panel, t) {
   const awards = t.awards || {};
   const keys = Object.keys(awards);
-  if (!keys.length) {
-    panel.appendChild(el('div', { class: 'empty' }, '시상 결과가 아직 등록되지 않았습니다.'));
-    return;
-  }
+  if (!keys.length) { panel.appendChild(el('div', { class: 'empty' }, '시상 결과가 아직 등록되지 않았습니다.')); return; }
   const container = el('div', { class: 'awards' });
   for (const k of keys) {
     const a = awards[k];
@@ -936,10 +1360,7 @@ function renderAwards(panel, t) {
       const valEl = el('div', { class: 'award-val' });
       if (typeof r.val === 'string') valEl.textContent = r.val;
       else valEl.appendChild(r.val);
-      list.appendChild(el('div', { class: 'award-row' }, [
-        el('div', { class: 'award-label' }, r.label),
-        valEl,
-      ]));
+      list.appendChild(el('div', { class: 'award-row' }, [el('div', { class: 'award-label' }, r.label), valEl]));
     }
     card.appendChild(list);
     container.appendChild(card);
@@ -958,19 +1379,16 @@ function formatPerson(p, showGoals) {
   if (showGoals && p.goals != null) {
     const wrap = el('span');
     wrap.appendChild(document.createTextNode(main));
-    const sub = el('span', { class: 'sub' }, `${p.goals}골`);
-    wrap.appendChild(sub);
+    wrap.appendChild(el('span', { class: 'sub' }, `${p.goals}골`));
     return wrap;
   }
   return main;
 }
 
+// --- Teams ---
 function renderTeams(panel, t) {
   const leagues = t.leagues || [];
-  if (!leagues.length) {
-    panel.appendChild(el('div', { class: 'empty' }, '참가팀 정보가 없습니다.'));
-    return;
-  }
+  if (!leagues.length) { panel.appendChild(el('div', { class: 'empty' }, '참가팀 정보가 없습니다.')); return; }
   for (const lg of leagues) {
     const sec = el('div', { class: 'teams-section' });
     sec.appendChild(el('div', { class: 'standings-head' }, [
@@ -988,6 +1406,174 @@ function renderTeams(panel, t) {
   }
 }
 
+// --- Registration ---
+function renderRegister(panel, t) {
+  const reg = t.registration || {};
+  const email = reg.contactEmail || 'epiphany.h92@gmail.com';
+
+  const intro = el('div', { class: 'reg-intro' });
+  const parts = [`<strong>${escapeHtml(t.name)}</strong> 참가 접수중입니다. 아래 양식을 작성하신 뒤 제출하면 기본 메일 앱이 열립니다. 수신인(운영진)이 자동 입력되어 있으니 그대로 보내주세요.`];
+  if (reg.deadline) parts.push(`접수 마감: <strong>${fmtDate(reg.deadline)}</strong>`);
+  if (reg.notes) parts.push(reg.notes);
+  intro.innerHTML = parts.join('<br>');
+  panel.appendChild(intro);
+
+  const tabs = el('div', { class: 'reg-tabs' });
+  const teamTab = el('button', { class: 'reg-tab', 'aria-selected': currentRegTab === 'team' ? 'true' : 'false', onclick: () => { currentRegTab = 'team'; renderPanel(); } }, '🏳️ 팀 참가 신청');
+  const playerTab = el('button', { class: 'reg-tab', 'aria-selected': currentRegTab === 'player' ? 'true' : 'false', onclick: () => { currentRegTab = 'player'; renderPanel(); } }, '👤 선수 등록');
+  tabs.appendChild(teamTab);
+  tabs.appendChild(playerTab);
+  panel.appendChild(tabs);
+
+  if (currentRegTab === 'team') panel.appendChild(renderTeamForm(t, email));
+  else panel.appendChild(renderPlayerForm(t, email));
+}
+
+function renderTeamForm(t, email) {
+  const card = el('div', { class: 'form-card' });
+  const form = el('form', { onsubmit: (e) => { e.preventDefault(); submitTeamForm(t, email, form); } });
+
+  form.appendChild(formRow('리그 선택', true,
+    el('div', { class: 'radio-row' }, [
+      radioOpt('league', 'young', '영맨 (영 FA)'),
+      radioOpt('league', 'veteran', '베테랑'),
+    ])
+  ));
+  form.appendChild(formRow('팀명', true, el('input', { type: 'text', name: 'teamName', required: 'required', placeholder: '예) SMU 블루' })));
+  form.appendChild(formRow('단장 성함', true, el('input', { type: 'text', name: 'captain', required: 'required', placeholder: '예) 이상훈' })));
+  form.appendChild(formRow('연락처 (전화/카톡 ID)', false, el('input', { type: 'text', name: 'contact', placeholder: '010-0000-0000' })));
+  form.appendChild(formRow('비고 (선택)', false, el('textarea', { name: 'notes', rows: '2', placeholder: '전달사항이 있다면 적어주세요' })));
+
+  const btnRow = el('div', { class: 'btn-row' }, [
+    el('button', { type: 'submit', class: 'btn btn-primary' }, '📧 신청서 보내기 (메일 앱 열기)'),
+  ]);
+  form.appendChild(btnRow);
+  card.appendChild(form);
+  return card;
+}
+
+function renderPlayerForm(t, email) {
+  const card = el('div', { class: 'form-card' });
+  const form = el('form', { onsubmit: (e) => { e.preventDefault(); submitPlayerForm(t, email, form); } });
+
+  form.appendChild(formRow('팀명', true, el('input', { type: 'text', name: 'teamName', required: 'required', placeholder: '예) SMU 블루' })));
+  form.appendChild(formRow('단장/코치 성함', false, el('input', { type: 'text', name: 'captain', placeholder: '선수 등록 담당자' })));
+
+  const rosterHead = el('div', {}, [
+    el('label', {}, '선수 명단 (여러 명 등록 가능)'),
+    el('div', { class: 'hint', style: 'margin-bottom:8px' }, '한 번에 모든 선수를 입력하신 뒤 제출하시면 한 통의 메일로 발송됩니다.'),
+  ]);
+  form.appendChild(rosterHead);
+
+  const tbl = el('table', { class: 'roster-tbl' });
+  tbl.innerHTML = `
+    <thead><tr>
+      <th>이름</th><th style="width:70px">등번호</th><th style="width:80px">출생연도</th><th>소속병원</th><th></th>
+    </tr></thead>
+    <tbody id="roster-body"></tbody>`;
+  form.appendChild(tbl);
+
+  const addBtn = el('button', { type: 'button', class: 'btn btn-secondary', style: 'margin-top:10px', onclick: () => addRosterRow(form) }, '➕ 선수 추가');
+  form.appendChild(addBtn);
+
+  const submitBtn = el('div', { class: 'btn-row' }, [
+    el('button', { type: 'submit', class: 'btn btn-primary' }, '📧 선수 명단 보내기 (메일 앱 열기)'),
+  ]);
+  form.appendChild(submitBtn);
+
+  card.appendChild(form);
+  setTimeout(() => { for (let i = 0; i < 3; i++) addRosterRow(form); }, 0);
+  return card;
+}
+
+function addRosterRow(form) {
+  const tbody = form.querySelector('#roster-body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" name="playerName" placeholder="이름"></td>
+    <td><input type="text" name="playerNumber" placeholder="번호"></td>
+    <td><input type="text" name="playerBirthYear" placeholder="예) 1992"></td>
+    <td><input type="text" name="playerHospital" placeholder="소속 병원"></td>
+    <td class="actions"><button type="button" class="row-del" aria-label="행 삭제">×</button></td>`;
+  tr.querySelector('.row-del').addEventListener('click', () => tr.remove());
+  tbody.appendChild(tr);
+}
+
+function formRow(label, required, control) {
+  const row = el('div', { class: 'form-row' });
+  const lbl = el('label', {}, label);
+  if (required) lbl.appendChild(el('span', { class: 'req' }, '*'));
+  row.appendChild(lbl);
+  row.appendChild(control);
+  return row;
+}
+
+function radioOpt(name, value, label) {
+  const l = el('label', { class: 'radio-opt' });
+  l.appendChild(el('input', { type: 'radio', name, value, required: 'required' }));
+  l.appendChild(document.createTextNode(label));
+  return l;
+}
+
+function submitTeamForm(t, email, form) {
+  const data = new FormData(form);
+  const league = data.get('league');
+  const leagueName = league === 'young' ? '영맨' : league === 'veteran' ? '베테랑' : league;
+  const teamName = (data.get('teamName') || '').trim();
+  const captain = (data.get('captain') || '').trim();
+  const contact = (data.get('contact') || '').trim();
+  const notes = (data.get('notes') || '').trim();
+
+  const subject = `[${t.shortName || t.name} 참가신청] ${leagueName} - ${teamName}`;
+  const bodyLines = [
+    `대회: ${t.name}`,
+    `리그: ${leagueName}`,
+    `팀명: ${teamName}`,
+    `단장: ${captain}`,
+  ];
+  if (contact) bodyLines.push(`연락처: ${contact}`);
+  if (notes) bodyLines.push('', '비고:', notes);
+  bodyLines.push('', '--', '본 메일은 의사축구 아카이브 참가 신청 폼에서 자동 생성되었습니다.');
+
+  const url = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+  window.location.href = url;
+}
+
+function submitPlayerForm(t, email, form) {
+  const teamName = (form.querySelector('[name="teamName"]').value || '').trim();
+  const captain = (form.querySelector('[name="captain"]').value || '').trim();
+  const rows = form.querySelectorAll('#roster-body tr');
+  const players = [];
+  rows.forEach(tr => {
+    const name = tr.querySelector('[name="playerName"]').value.trim();
+    const number = tr.querySelector('[name="playerNumber"]').value.trim();
+    const birth = tr.querySelector('[name="playerBirthYear"]').value.trim();
+    const hospital = tr.querySelector('[name="playerHospital"]').value.trim();
+    if (name || number || birth || hospital) players.push({ name, number, birth, hospital });
+  });
+  if (!teamName) { alert('팀명을 입력해주세요.'); return; }
+  if (!players.length) { alert('최소 1명 이상의 선수를 입력해주세요.'); return; }
+
+  const subject = `[${t.shortName || t.name} 선수등록] ${teamName} (${players.length}명)`;
+  const bodyLines = [
+    `대회: ${t.name}`,
+    `팀명: ${teamName}`,
+  ];
+  if (captain) bodyLines.push(`담당자: ${captain}`);
+  bodyLines.push('', `선수 명단 (${players.length}명):`);
+  bodyLines.push('이름 / 등번호 / 출생연도 / 소속병원');
+  players.forEach((p, i) => {
+    bodyLines.push(`${i + 1}. ${p.name || '-'} / ${p.number || '-'} / ${p.birth || '-'} / ${p.hospital || '-'}`);
+  });
+  bodyLines.push('', '--', '본 메일은 의사축구 아카이브 선수 등록 폼에서 자동 생성되었습니다.');
+
+  const url = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+  window.location.href = url;
+}
+
+// =========================================================
+// Theme toggle
+// =========================================================
 function initTheme() {
   try {
     const saved = localStorage.getItem('kmft-theme');
@@ -1014,9 +1600,7 @@ async function init() {
     const payload = await res.json();
     const list = Array.isArray(payload) ? payload : (payload.tournaments || []);
     tournaments = {};
-    for (const t of list) {
-      if (t && t.id) tournaments[t.id] = t;
-    }
+    for (const t of list) if (t && t.id) tournaments[t.id] = t;
     render();
   } catch (e) {
     console.error('Failed to load tournaments.json', e);
@@ -1027,6 +1611,7 @@ async function init() {
     const h = (location.hash || '').replace('#', '');
     if (h && tournaments[h] && h !== currentTournamentId) {
       currentTournamentId = h;
+      currentTab = null;
       render();
     }
   });
