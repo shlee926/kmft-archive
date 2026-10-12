@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>의사축구 아카이브</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230D5932'/%3E%3Ccircle cx='50' cy='50' r='28' fill='none' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* layout: sticky brand bar + tournament pills → hero → tabs → results/standings/awards/teams panels */
+
+:root {
+  --bg: #F7F6F2;
+  --surface: #FFFFFF;
+  --surface-2: #EFEDE7;
+  --fg: #141720;
+  --fg-muted: #5B6472;
+  --border: #DFDCD3;
+  --divider: #CDC9BD;
+  --accent: #0D5932;
+  --accent-ink: #FFFFFF;
+  --accent-weak: #E6EEE9;
+  --gold: #B88A1A;
+  --silver: #8A94A3;
+  --bronze: #A86735;
+  --young-a: #15803D;
+  --young-b: #1D4ED8;
+  --young: #15803D;
+  --veteran: #C2410C;
+  --score-ink: #0A1F3B;
+  --f-display: "Noto Sans KR", system-ui, -apple-system, sans-serif;
+  --f-body: "Noto Sans KR", system-ui, -apple-system, sans-serif;
+  --f-numeric: "Oswald", "Noto Sans KR", system-ui, sans-serif;
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C0E13;
+    --surface: #151921;
+    --surface-2: #1D222C;
+    --fg: #E8EBF0;
+    --fg-muted: #8690A1;
+    --border: #2A303C;
+    --divider: #353C49;
+    --accent: #4ADE80;
+    --accent-ink: #0A1D12;
+    --accent-weak: #0E1E16;
+    --gold: #E6B429;
+    --silver: #A9B3C2;
+    --bronze: #D08A54;
+    --young-a: #22C55E;
+    --young-b: #3B82F6;
+    --young: #22C55E;
+    --veteran: #F97316;
+    --score-ink: #BFDBFE;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0C0E13;
+  --surface: #151921;
+  --surface-2: #1D222C;
+  --fg: #E8EBF0;
+  --fg-muted: #8690A1;
+  --border: #2A303C;
+  --divider: #353C49;
+  --accent: #4ADE80;
+  --accent-ink: #0A1D12;
+  --accent-weak: #0E1E16;
+  --gold: #E6B429;
+  --silver: #A9B3C2;
+  --bronze: #D08A54;
+  --young-a: #22C55E;
+  --young-b: #3B82F6;
+  --young: #22C55E;
+  --veteran: #F97316;
+  --score-ink: #BFDBFE;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--f-body);
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.55;
+  padding-inline: 16px;
+  padding-block: 0 48px;
+  font-variant-numeric: tabular-nums;
+  min-height: 100vh;
+}
+
+.wrap { max-width: 1180px; margin-inline: auto; }
+
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: color-mix(in oklab, var(--bg) 90%, transparent);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid var(--border);
+  margin-inline: -16px;
+  padding-inline: 16px;
+}
+.topbar-inner {
+  max-width: 1180px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-block: 10px;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  font-size: 15px;
+  min-width: 0;
+}
+.brand .mark {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  position: relative;
+  flex-shrink: 0;
+}
+.brand .mark::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1.5px solid var(--accent-ink);
+  border-radius: 50%;
+}
+.brand .mark::after {
+  content: "";
+  position: absolute;
+  inset: 10px 2px;
+  border-left: 1.5px solid var(--accent-ink);
+  border-right: 1.5px solid var(--accent-ink);
+}
+.brand small {
+  font-weight: 400;
+  color: var(--fg-muted);
+  font-size: 12px;
+  margin-left: 2px;
+}
+.tour-pills {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+.tour-pill {
+  font-family: var(--f-numeric);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.tour-pill[aria-selected="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+.theme-toggle {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  width: 34px; height: 34px;
+  cursor: pointer;
+  color: var(--fg);
+  font-size: 15px;
+}
+
+.hero {
+  padding-block: 32px 20px;
+  border-bottom: 1px solid var(--divider);
+}
+.hero-eyebrow {
+  font-family: var(--f-numeric);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.hero-title {
+  font-weight: 900;
+  font-size: clamp(28px, 5vw, 44px);
+  margin: 8px 0 12px;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.hero-meta {
+  display: flex;
+  gap: 20px;
+  color: var(--fg-muted);
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+.hero-meta span { display: inline-flex; gap: 6px; align-items: baseline; }
+.hero-meta b { color: var(--fg); font-weight: 500; }
+.hero-meta .label {
+  font-family: var(--f-numeric);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--divider);
+  margin-top: 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  font-family: var(--f-body);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+}
+.tab[aria-selected="true"] {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+  font-weight: 700;
+}
+
+.panel { padding-block: 28px; min-height: 300px; }
+
+.rounds { display: grid; gap: 28px; }
+.round {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .round { grid-template-columns: 1fr; gap: 10px; }
+}
+.round-label {
+  font-family: var(--f-numeric);
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.03em;
+  color: var(--fg);
+}
+.round-time {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+  font-family: var(--f-numeric);
+  letter-spacing: 0.05em;
+}
+.matches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+.match {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  min-width: 0;
+  position: relative;
+}
+.match-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.league-dot {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.league-name {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  font-weight: 700;
+}
+.field-label {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--fg-muted);
+  font-family: var(--f-numeric);
+  letter-spacing: 0.04em;
+}
+.match-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.team { font-weight: 500; font-size: 15px; min-width: 0; overflow-wrap: anywhere; line-height: 1.3; }
+.team.home { text-align: right; }
+.team.away { text-align: left; }
+.score {
+  font-family: var(--f-numeric);
+  font-weight: 700;
+  font-size: 22px;
+  padding: 2px 12px;
+  color: var(--score-ink);
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  min-width: 64px;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+.score.pending { color: var(--fg-muted); background: transparent; font-size: 13px; letter-spacing: 0.1em; }
+.scorers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--divider);
+  font-size: 12px;
+  color: var(--fg-muted);
+  line-height: 1.55;
+}
+.scorers > div.home { text-align: right; }
+.scorers > div.away { text-align: left; }
+.scorers .scorer-row { display: block; }
+.penalty-note {
+  margin-top: 10px;
+  padding: 6px 10px;
+  background: var(--accent-weak);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.05em;
+  border-radius: var(--r-sm);
+}
+.match.playoff {
+  border-color: var(--accent);
+  border-width: 1.5px;
+}
+.playoff-tag {
+  position: absolute;
+  top: -9px; left: 12px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--f-numeric);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--r-sm);
+  letter-spacing: 0.08em;
+}
+
+.standings-group { margin-bottom: 36px; }
+.standings-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.standings-head .league-dot { width: 14px; height: 14px; }
+.standings-head h2 {
+  font-weight: 700;
+  font-size: 20px;
+  margin: 0;
+  letter-spacing: 0.005em;
+}
+.standings-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.standings-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+.standings-tbl th,
+.standings-tbl td {
+  padding: 10px 10px;
+  text-align: center;
+  font-size: 14px;
+  border-bottom: 1px solid var(--divider);
+}
+.standings-tbl th {
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-family: var(--f-numeric);
+}
+.standings-tbl td.team-cell {
+  text-align: left;
+  font-weight: 500;
+  padding-left: 16px;
+}
+.standings-tbl tr:last-child td { border-bottom: none; }
+.standings-tbl td.pts {
+  font-family: var(--f-numeric);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--fg);
+}
+.standings-tbl td.num { font-family: var(--f-numeric); font-weight: 500; }
+.standings-tbl td.gd.pos { color: var(--young-a); }
+.standings-tbl td.gd.neg { color: var(--veteran); }
+.rank-cell { width: 56px; }
+.rank-medal {
+  display: inline-flex;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--divider);
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-numeric);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fg);
+}
+.rank-medal.g1 { background: var(--gold); color: #fff; border-color: var(--gold); box-shadow: 0 0 0 2px color-mix(in oklab, var(--gold) 20%, transparent); }
+.rank-medal.g2 { background: var(--silver); color: #fff; border-color: var(--silver); }
+.rank-medal.g3 { background: var(--bronze); color: #fff; border-color: var(--bronze); }
+.med-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 6px;
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  border-radius: 3px;
+  margin-left: 6px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+.tiebreak-note {
+  font-size: 12px;
+  color: var(--fg-muted);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.awards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 20px;
+}
+.award-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px;
+}
+.award-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--divider);
+}
+.award-head h2 {
+  font-weight: 700;
+  font-size: 22px;
+  margin: 0;
+}
+.award-list { display: grid; gap: 14px; }
+.award-row {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  align-items: baseline;
+  gap: 14px;
+}
+.award-label {
+  font-family: var(--f-numeric);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  font-weight: 700;
+}
+.award-val {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.award-val .sub {
+  display: block;
+  font-size: 12px;
+  color: var(--fg-muted);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.teams-section { margin-bottom: 28px; }
+.teams-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.team-chip {
+  font-size: 13px;
+  padding: 5px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg);
+}
+.team-chip.med { background: var(--surface-2); color: var(--fg-muted); }
+
+.footer-note {
+  margin-top: 48px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  color: var(--fg-muted);
+  line-height: 1.65;
+}
+.footer-note strong { color: var(--fg); font-weight: 700; display: block; margin-bottom: 4px; }
+
+.empty {
+  padding: 72px 20px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <span>의사축구 아카이브 <small>· 대한의사축구연맹</small></span>
+    </div>
+    <div class="tour-pills" id="tour-pills" role="tablist"></div>
+    <button class="theme-toggle" id="theme-toggle" aria-label="테마 전환" title="테마 전환">◐</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="hero" class="hero"></div>
+  <div class="tabs" id="tabs" role="tablist">
+    <button class="tab" data-tab="results" role="tab">경기 결과</button>
+    <button class="tab" data-tab="standings" role="tab">순위표</button>
+    <button class="tab" data-tab="awards" role="tab">시상</button>
+    <button class="tab" data-tab="teams" role="tab">참가팀</button>
+  </div>
+  <div id="panel" class="panel"></div>
+  <div class="footer-note">
+    <strong>경기 결과 업데이트 안내</strong>
+    대회 당일 경기기록지 사진 또는 결과 텍스트를 운영자(Claude 대화)로 전달해주시면 사이트에 반영됩니다.
+  </div>
+</div>
+
+<script>
+// =========================================================
+// State
+// =========================================================
+let tournaments = {};
+let currentTournamentId = null;
+let currentTab = 'results';
+
+const LEAGUE_COLORS = {
+  'young-a': 'var(--young-a)',
+  'young-b': 'var(--young-b)',
+  'young':   'var(--young)',
+  'veteran': 'var(--veteran)',
+};
+
+function el(tag, attrs = {}, children = []) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'html') e.innerHTML = v;
+    else e.setAttribute(k, v);
+  }
+  if (!Array.isArray(children)) children = [children];
+  for (const c of children) {
+    if (c == null || c === false) continue;
+    e.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+  }
+  return e;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${y}년 ${+m}월 ${+d}일`;
+}
+
+function leagueById(t, id) {
+  return (t.leagues || []).find(l => l.id === id);
+}
+
+function h2hResult(matches, leagueId, teamA, teamB) {
+  for (const m of matches) {
+    if (m.leagueId !== leagueId) continue;
+    if (m.kind && m.kind !== 'group') continue;
+    if (m.homeScore == null || m.awayScore == null) continue;
+    if (m.home === teamA && m.away === teamB) {
+      return m.homeScore > m.awayScore ? 1 : m.homeScore < m.awayScore ? -1 : 0;
+    }
+    if (m.home === teamB && m.away === teamA) {
+      return m.homeScore > m.awayScore ? -1 : m.homeScore < m.awayScore ? 1 : 0;
+    }
+  }
+  return 0;
+}
+
+function computeStandings(tournament, league) {
+  const teams = {};
+  for (const t of league.teams) {
+    teams[t] = { team: t, mp: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+  }
+  const matches = tournament.matches || [];
+  for (const m of matches) {
+    if (m.leagueId !== league.id) continue;
+    if (m.kind && m.kind !== 'group') continue;
+    if (m.homeScore == null || m.awayScore == null) continue;
+    if (!teams[m.home] || !teams[m.away]) continue;
+    teams[m.home].mp++; teams[m.away].mp++;
+    teams[m.home].gf += m.homeScore; teams[m.home].ga += m.awayScore;
+    teams[m.away].gf += m.awayScore; teams[m.away].ga += m.homeScore;
+    if (m.homeScore > m.awayScore) {
+      teams[m.home].w++; teams[m.home].pts += 3; teams[m.away].l++;
+    } else if (m.homeScore < m.awayScore) {
+      teams[m.away].w++; teams[m.away].pts += 3; teams[m.home].l++;
+    } else {
+      teams[m.home].d++; teams[m.away].d++;
+      teams[m.home].pts++; teams[m.away].pts++;
+    }
+  }
+  const medSet = new Set(league.medStudentTeams || []);
+  const rows = Object.values(teams).map(r => ({
+    ...r, gd: r.gf - r.ga, isMed: medSet.has(r.team),
+  }));
+  rows.sort((a, b) => {
+    if (a.isMed !== b.isMed) return a.isMed ? 1 : -1;
+    if (b.pts !== a.pts) return b.pts - a.pts;
+    if (b.gd !== a.gd) return b.gd - a.gd;
+    if (b.gf !== a.gf) return b.gf - a.gf;
+    return -h2hResult(matches, league.id, a.team, b.team);
+  });
+  return rows;
+}
+
+function render() {
+  renderTourPills();
+  renderHero();
+  renderTabs();
+  renderPanel();
+}
+
+function renderTourPills() {
+  const pills = document.getElementById('tour-pills');
+  pills.innerHTML = '';
+  const list = Object.values(tournaments).sort((a, b) =>
+    (b.date || '').localeCompare(a.date || '')
+  );
+  if (!list.length) {
+    currentTournamentId = null;
+    return;
+  }
+  if (!currentTournamentId || !tournaments[currentTournamentId]) {
+    const h = (location.hash || '').replace('#', '');
+    currentTournamentId = (h && tournaments[h]) ? h : list[0].id;
+  }
+  for (const t of list) {
+    const btn = el('button', {
+      class: 'tour-pill',
+      role: 'tab',
+      'aria-selected': t.id === currentTournamentId ? 'true' : 'false',
+      onclick: () => {
+        currentTournamentId = t.id;
+        try { location.hash = t.id; } catch {}
+        render();
+      },
+    }, t.shortName || t.name || t.id);
+    pills.appendChild(btn);
+  }
+}
+
+function renderHero() {
+  const hero = document.getElementById('hero');
+  hero.innerHTML = '';
+  const t = tournaments[currentTournamentId];
+  if (!t) {
+    hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
+    hero.appendChild(el('h1', { class: 'hero-title' }, '의사축구 아카이브'));
+    hero.appendChild(el('div', { class: 'hero-meta' }, el('span', {}, '등록된 대회가 없습니다.')));
+    return;
+  }
+  hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
+  hero.appendChild(el('h1', { class: 'hero-title' }, t.name));
+  const meta = el('div', { class: 'hero-meta' });
+  if (t.date) {
+    meta.appendChild(el('span', {}, [
+      el('span', { class: 'label' }, '일시'),
+      el('b', {}, fmtDate(t.date)),
+    ]));
+  }
+  if (t.venue) {
+    meta.appendChild(el('span', {}, [
+      el('span', { class: 'label' }, '장소'),
+      el('b', {}, t.venue),
+    ]));
+  }
+  hero.appendChild(meta);
+}
+
+function renderTabs() {
+  for (const b of document.querySelectorAll('#tabs .tab')) {
+    const on = b.dataset.tab === currentTab;
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+    b.onclick = () => { currentTab = b.dataset.tab; renderTabs(); renderPanel(); };
+  }
+}
+
+function renderPanel() {
+  const panel = document.getElementById('panel');
+  panel.innerHTML = '';
+  const t = tournaments[currentTournamentId];
+  if (!t) return;
+  if (currentTab === 'results') renderResults(panel, t);
+  else if (currentTab === 'standings') renderStandings(panel, t);
+  else if (currentTab === 'awards') renderAwards(panel, t);
+  else if (currentTab === 'teams') renderTeams(panel, t);
+}
+
+function renderResults(panel, t) {
+  const matches = t.matches || [];
+  if (!matches.length) {
+    panel.appendChild(el('div', { class: 'empty' }, '등록된 경기가 없습니다.'));
+    return;
+  }
+  const byRound = new Map();
+  for (const m of matches) {
+    const key = m.roundOrder != null ? m.roundOrder : 999;
+    if (!byRound.has(key)) byRound.set(key, { round: m.round || '', time: m.time || '', matches: [] });
+    byRound.get(key).matches.push(m);
+  }
+  const container = el('div', { class: 'rounds' });
+  const keys = [...byRound.keys()].sort((a, b) => a - b);
+  for (const k of keys) {
+    const grp = byRound.get(k);
+    const roundEl = el('div', { class: 'round' });
+    roundEl.appendChild(el('div', {}, [
+      el('div', { class: 'round-label' }, grp.round || ''),
+      grp.time ? el('div', { class: 'round-time' }, grp.time) : null,
+    ]));
+    const mts = el('div', { class: 'matches' });
+    for (const m of grp.matches) mts.appendChild(renderMatchCard(m, t));
+    roundEl.appendChild(mts);
+    container.appendChild(roundEl);
+  }
+  panel.appendChild(container);
+}
+
+function renderMatchCard(m, t) {
+  const league = leagueById(t, m.leagueId);
+  const kind = m.kind || 'group';
+  const card = el('div', { class: 'match' + (kind !== 'group' ? ' playoff' : '') });
+  if (kind === 'final') card.appendChild(el('div', { class: 'playoff-tag' }, 'FINAL'));
+  else if (kind === 'third_place') card.appendChild(el('div', { class: 'playoff-tag' }, '3·4위전'));
+  else if (kind === 'semifinal') card.appendChild(el('div', { class: 'playoff-tag' }, '준결승'));
+
+  const head = el('div', { class: 'match-head' });
+  head.appendChild(el('span', { class: 'league-dot', style: `background:${LEAGUE_COLORS[m.leagueId] || 'var(--fg-muted)'}` }));
+  head.appendChild(el('span', { class: 'league-name' }, league?.name || m.leagueId || ''));
+  if (m.field) head.appendChild(el('span', { class: 'field-label' }, m.field));
+  card.appendChild(head);
+
+  const hasScore = m.homeScore != null && m.awayScore != null;
+  const row = el('div', { class: 'match-row' });
+  row.appendChild(el('div', { class: 'team home' }, m.home));
+  row.appendChild(el('div', { class: 'score' + (hasScore ? '' : ' pending') }, hasScore ? `${m.homeScore} : ${m.awayScore}` : 'VS'));
+  row.appendChild(el('div', { class: 'team away' }, m.away));
+  card.appendChild(row);
+
+  const hs = (m.homeScorers || []).map(fmtScorer).filter(Boolean);
+  const as = (m.awayScorers || []).map(fmtScorer).filter(Boolean);
+  if (hs.length || as.length) {
+    const sc = el('div', { class: 'scorers' });
+    const hDiv = el('div', { class: 'home' });
+    hs.forEach(s => hDiv.appendChild(el('span', { class: 'scorer-row' }, s)));
+    const aDiv = el('div', { class: 'away' });
+    as.forEach(s => aDiv.appendChild(el('span', { class: 'scorer-row' }, s)));
+    sc.appendChild(hDiv);
+    sc.appendChild(aDiv);
+    card.appendChild(sc);
+  }
+
+  if (m.penaltyWinner) {
+    card.appendChild(el('div', { class: 'penalty-note' }, `승부차기 · ${m.penaltyWinner} 우승`));
+  } else if (m.note) {
+    card.appendChild(el('div', { class: 'penalty-note' }, m.note));
+  }
+  return card;
+}
+
+function fmtScorer(s) {
+  if (!s) return '';
+  if (typeof s === 'string') return s;
+  const mins = Array.isArray(s.minutes) ? s.minutes.map(x => `${x}'`).join(', ') : '';
+  const name = s.name || '';
+  const tag = s.og ? ' (OG)' : s.wc ? ' (WC)' : '';
+  return [name + tag, mins].filter(Boolean).join(' ');
+}
+
+function renderStandings(panel, t) {
+  const leagues = t.leagues || [];
+  if (!leagues.length) {
+    panel.appendChild(el('div', { class: 'empty' }, '등록된 리그가 없습니다.'));
+    return;
+  }
+  for (const lg of leagues) {
+    const grp = el('div', { class: 'standings-group' });
+    grp.appendChild(el('div', { class: 'standings-head' }, [
+      el('span', { class: 'league-dot', style: `background:${LEAGUE_COLORS[lg.id] || 'var(--fg-muted)'}` }),
+      el('h2', {}, lg.name),
+    ]));
+    const rows = computeStandings(t, lg);
+    const wrap = el('div', { class: 'standings-wrap' });
+    const tbl = el('table', { class: 'standings-tbl' });
+    tbl.innerHTML = `
+      <thead><tr>
+        <th class="rank-cell">순위</th>
+        <th style="text-align:left; padding-left:16px">팀</th>
+        <th>경기</th><th>승</th><th>무</th><th>패</th>
+        <th>득</th><th>실</th><th>득실</th><th>승점</th>
+      </tr></thead>`;
+    const tbody = el('tbody');
+    rows.forEach((r, i) => {
+      const rank = i + 1;
+      const medalCls = (!r.isMed && rank === 1) ? 'g1'
+                      : (!r.isMed && rank === 2) ? 'g2'
+                      : (!r.isMed && rank === 3 && rows.length >= 5) ? 'g3'
+                      : '';
+      const tr = el('tr');
+      const gdCls = r.gd > 0 ? 'pos' : r.gd < 0 ? 'neg' : '';
+      tr.innerHTML = `
+        <td><span class="rank-medal ${medalCls}">${rank}</span></td>
+        <td class="team-cell">${escapeHtml(r.team)}${r.isMed ? '<span class="med-badge">의대생</span>' : ''}</td>
+        <td class="num">${r.mp}</td>
+        <td class="num">${r.w}</td>
+        <td class="num">${r.d}</td>
+        <td class="num">${r.l}</td>
+        <td class="num">${r.gf}</td>
+        <td class="num">${r.ga}</td>
+        <td class="num gd ${gdCls}">${r.gd > 0 ? '+' : ''}${r.gd}</td>
+        <td class="pts">${r.pts}</td>`;
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    wrap.appendChild(tbl);
+    grp.appendChild(wrap);
+    grp.appendChild(el('div', { class: 'tiebreak-note' },
+      `순위 결정: 승점 → 득실차 → 다득점 → 승자승${(lg.medStudentTeams || []).length ? ` · ${lg.medStudentTeams.join(', ')}은(는) 의대 학생 참가팀으로 성적과 무관하게 최하위 처리` : ''}`));
+    panel.appendChild(grp);
+  }
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderAwards(panel, t) {
+  const awards = t.awards || {};
+  const keys = Object.keys(awards);
+  if (!keys.length) {
+    panel.appendChild(el('div', { class: 'empty' }, '시상 결과가 아직 등록되지 않았습니다.'));
+    return;
+  }
+  const container = el('div', { class: 'awards' });
+  for (const k of keys) {
+    const a = awards[k];
+    const card = el('div', { class: 'award-card' });
+    const colorVar = LEAGUE_COLORS[a.leagueKey || k] || 'var(--accent)';
+    card.appendChild(el('div', { class: 'award-head' }, [
+      el('span', { class: 'league-dot', style: `background:${colorVar}; width:14px; height:14px` }),
+      el('h2', {}, a.title || k),
+    ]));
+    const list = el('div', { class: 'award-list' });
+    const rows = [
+      a.champion   ? { label: '우승',    val: a.champion } : null,
+      a.runnerUp   ? { label: '준우승',  val: a.runnerUp } : null,
+      a.thirdPlace ? { label: '3위',    val: a.thirdPlace } : null,
+      a.topScorer  ? { label: '득점왕',  val: formatPerson(a.topScorer, true) } : null,
+      a.mvp        ? { label: 'MVP',    val: formatPerson(a.mvp) } : null,
+    ].filter(Boolean);
+    for (const r of rows) {
+      const valEl = el('div', { class: 'award-val' });
+      if (typeof r.val === 'string') valEl.textContent = r.val;
+      else valEl.appendChild(r.val);
+      list.appendChild(el('div', { class: 'award-row' }, [
+        el('div', { class: 'award-label' }, r.label),
+        valEl,
+      ]));
+    }
+    card.appendChild(list);
+    container.appendChild(card);
+  }
+  panel.appendChild(container);
+}
+
+function formatPerson(p, showGoals) {
+  if (!p) return '';
+  if (typeof p === 'string') return p;
+  const parts = [];
+  if (p.team) parts.push(p.team);
+  const name = (p.name || '') + (p.number ? ` ${p.number}번` : '');
+  if (name) parts.push(name + (p.wc ? ' (WC)' : '') + ' 선생님');
+  const main = parts.join(' · ');
+  if (showGoals && p.goals != null) {
+    const wrap = el('span');
+    wrap.appendChild(document.createTextNode(main));
+    const sub = el('span', { class: 'sub' }, `${p.goals}골`);
+    wrap.appendChild(sub);
+    return wrap;
+  }
+  return main;
+}
+
+function renderTeams(panel, t) {
+  const leagues = t.leagues || [];
+  if (!leagues.length) {
+    panel.appendChild(el('div', { class: 'empty' }, '참가팀 정보가 없습니다.'));
+    return;
+  }
+  for (const lg of leagues) {
+    const sec = el('div', { class: 'teams-section' });
+    sec.appendChild(el('div', { class: 'standings-head' }, [
+      el('span', { class: 'league-dot', style: `background:${LEAGUE_COLORS[lg.id] || 'var(--fg-muted)'}` }),
+      el('h2', {}, lg.name),
+    ]));
+    const chips = el('div', { class: 'teams-chips' });
+    const medSet = new Set(lg.medStudentTeams || []);
+    for (const tm of lg.teams || []) {
+      const isMed = medSet.has(tm);
+      chips.appendChild(el('span', { class: 'team-chip' + (isMed ? ' med' : '') }, tm + (isMed ? ' · 의대생' : '')));
+    }
+    sec.appendChild(chips);
+    panel.appendChild(sec);
+  }
+}
+
+function initTheme() {
+  try {
+    const saved = localStorage.getItem('kmft-theme');
+    if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+  } catch {}
+  document.getElementById('theme-toggle').onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme');
+    const sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let next;
+    if (cur === 'dark') next = 'light';
+    else if (cur === 'light') next = 'dark';
+    else next = sysDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('kmft-theme', next); } catch {}
+  };
+}
+
+async function init() {
+  initTheme();
+  render();
+  try {
+    const res = await fetch('data/tournaments.json?v=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const payload = await res.json();
+    const list = Array.isArray(payload) ? payload : (payload.tournaments || []);
+    tournaments = {};
+    for (const t of list) {
+      if (t && t.id) tournaments[t.id] = t;
+    }
+    render();
+  } catch (e) {
+    console.error('Failed to load tournaments.json', e);
+    document.getElementById('panel').innerHTML = '';
+    document.getElementById('panel').appendChild(el('div', { class: 'empty' }, '대회 데이터를 불러오지 못했습니다.'));
+  }
+  window.addEventListener('hashchange', () => {
+    const h = (location.hash || '').replace('#', '');
+    if (h && tournaments[h] && h !== currentTournamentId) {
+      currentTournamentId = h;
+      render();
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>

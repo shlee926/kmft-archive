@@ -1,0 +1,957 @@
+{
+  "tournaments": [
+    {
+      "name": "2026 춘계의사 축구대회",
+      "shortName": "2026 춘계",
+      "season": "spring",
+      "year": 2026,
+      "date": "2026-04-26",
+      "venue": "대전 안영생활체육공원",
+      "leagues": [
+        {
+          "id": "young-a",
+          "name": "영맨 A조",
+          "teams": [
+            "성남영맨",
+            "전남대OB",
+            "SMU블루",
+            "건양의대"
+          ],
+          "medStudentTeams": [
+            "건양의대"
+          ]
+        },
+        {
+          "id": "young-b",
+          "name": "영맨 B조",
+          "teams": [
+            "건양대OB",
+            "SMU베테랑",
+            "SMU화이트",
+            "충남의대"
+          ],
+          "medStudentTeams": [
+            "충남의대"
+          ]
+        },
+        {
+          "id": "veteran",
+          "name": "베테랑",
+          "teams": [
+            "충청",
+            "성남베테랑",
+            "FC Medicals",
+            "부산",
+            "대경"
+          ]
+        }
+      ],
+      "matches": [
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:00-08:45",
+          "field": "1구장",
+          "leagueId": "young-a",
+          "home": "성남영맨",
+          "away": "전남대OB",
+          "homeScore": 0,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:00-08:45",
+          "field": "2구장",
+          "leagueId": "young-a",
+          "home": "SMU블루",
+          "away": "건양의대",
+          "homeScore": 4,
+          "awayScore": 0,
+          "homeScorers": [
+            {
+              "name": "탁권용",
+              "minutes": [
+                16
+              ]
+            },
+            {
+              "name": "윤재신",
+              "minutes": [
+                35,
+                36
+              ]
+            },
+            {
+              "name": "공병호",
+              "minutes": [
+                37
+              ]
+            }
+          ],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:00-08:45",
+          "field": "3구장",
+          "leagueId": "young-b",
+          "home": "건양대OB",
+          "away": "SMU베테랑",
+          "homeScore": 1,
+          "awayScore": 0,
+          "homeScorers": [
+            {
+              "name": "이원철",
+              "minutes": [
+                9
+              ]
+            }
+          ],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "08:55-09:40",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "성남베테랑",
+          "away": "충청",
+          "homeScore": 0,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "08:55-09:40",
+          "field": "2구장",
+          "leagueId": "young-b",
+          "home": "SMU화이트",
+          "away": "충남의대",
+          "homeScore": 4,
+          "awayScore": 0,
+          "homeScorers": [
+            {
+              "name": "임동섭",
+              "minutes": [
+                5,
+                30
+              ]
+            },
+            {
+              "name": "강세호",
+              "minutes": [
+                24
+              ]
+            },
+            {
+              "name": "최민석",
+              "minutes": [
+                33
+              ]
+            }
+          ],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "08:55-09:40",
+          "field": "3구장",
+          "leagueId": "young-a",
+          "home": "SMU블루",
+          "away": "성남영맨",
+          "homeScore": 2,
+          "awayScore": 0,
+          "homeScorers": [
+            {
+              "name": "윤재신",
+              "minutes": [
+                8,
+                37
+              ]
+            }
+          ],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "10:10-10:55",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "충청",
+          "away": "FC Medicals",
+          "homeScore": 1,
+          "awayScore": 2,
+          "homeScorers": [
+            {
+              "name": "정현석",
+              "minutes": [
+                11
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "유용호",
+              "minutes": [
+                21
+              ]
+            },
+            {
+              "name": "심재호",
+              "minutes": [
+                30
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "10:10-10:55",
+          "field": "2구장",
+          "leagueId": "veteran",
+          "home": "부산",
+          "away": "대경",
+          "homeScore": 0,
+          "awayScore": 2,
+          "homeScorers": [],
+          "awayScorers": [
+            {
+              "name": "배진우",
+              "minutes": [
+                20,
+                39
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "10:10-10:55",
+          "field": "3구장",
+          "leagueId": "young-a",
+          "home": "전남대OB",
+          "away": "건양의대",
+          "homeScore": 0,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "11:05-11:50",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "성남베테랑",
+          "away": "FC Medicals",
+          "homeScore": 2,
+          "awayScore": 1,
+          "homeScorers": [
+            {
+              "name": "차민수",
+              "minutes": [
+                19,
+                20
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "이익준",
+              "minutes": [
+                13
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "11:05-11:50",
+          "field": "2구장",
+          "leagueId": "young-b",
+          "home": "SMU화이트",
+          "away": "건양대OB",
+          "homeScore": 1,
+          "awayScore": 2,
+          "homeScorers": [
+            {
+              "name": "이한결",
+              "minutes": [
+                20
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "최재규",
+              "minutes": [
+                13
+              ]
+            },
+            {
+              "name": "이원철",
+              "minutes": [
+                18
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "11:05-11:50",
+          "field": "3구장",
+          "leagueId": "young-b",
+          "home": "SMU베테랑",
+          "away": "충남의대",
+          "homeScore": 2,
+          "awayScore": 3,
+          "homeScorers": [
+            {
+              "name": "최재영",
+              "minutes": [
+                7
+              ]
+            },
+            {
+              "name": "백정국",
+              "minutes": [
+                35
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "최현중",
+              "minutes": [
+                1
+              ]
+            },
+            {
+              "name": "김대희",
+              "minutes": [
+                12
+              ]
+            },
+            {
+              "name": "김현석",
+              "minutes": [
+                17
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 5,
+          "round": "5R",
+          "time": "12:00-12:45",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "대경",
+          "away": "성남베테랑",
+          "homeScore": 1,
+          "awayScore": 0,
+          "homeScorers": [
+            {
+              "name": "배진우",
+              "minutes": [
+                18
+              ]
+            }
+          ],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 5,
+          "round": "5R",
+          "time": "12:00-12:45",
+          "field": "2구장",
+          "leagueId": "veteran",
+          "home": "충청",
+          "away": "부산",
+          "homeScore": 3,
+          "awayScore": 1,
+          "homeScorers": [
+            {
+              "name": "위성재",
+              "minutes": [
+                6,
+                37
+              ]
+            },
+            {
+              "name": "여병구",
+              "minutes": [
+                8
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "허무중",
+              "minutes": [
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 5,
+          "round": "5R",
+          "time": "12:00-12:45",
+          "field": "3구장",
+          "leagueId": "young-b",
+          "home": "건양대OB",
+          "away": "충남의대",
+          "homeScore": 2,
+          "awayScore": 3,
+          "homeScorers": [
+            {
+              "name": "조형준",
+              "minutes": [
+                3,
+                35
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "손영민",
+              "minutes": [
+                29
+              ]
+            },
+            {
+              "name": "송누리",
+              "minutes": [
+                33
+              ]
+            },
+            {
+              "name": "장유성",
+              "minutes": [
+                39
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 6,
+          "round": "6R",
+          "time": "12:55-13:40",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "FC Medicals",
+          "away": "대경",
+          "homeScore": 2,
+          "awayScore": 2,
+          "homeScorers": [
+            {
+              "name": "권민",
+              "minutes": [
+                3
+              ]
+            },
+            {
+              "name": "조진환",
+              "minutes": [
+                9
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "한길태",
+              "minutes": [
+                35
+              ]
+            },
+            {
+              "name": "배진우",
+              "minutes": [
+                38
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 6,
+          "round": "6R",
+          "time": "12:55-13:40",
+          "field": "2구장",
+          "leagueId": "young-a",
+          "home": "성남영맨",
+          "away": "건양의대",
+          "homeScore": 3,
+          "awayScore": 0,
+          "homeScorers": [
+            {
+              "name": "안재현",
+              "minutes": [
+                18,
+                20,
+                39
+              ]
+            }
+          ],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 6,
+          "round": "6R",
+          "time": "12:55-13:40",
+          "field": "3구장",
+          "leagueId": "young-b",
+          "home": "SMU베테랑",
+          "away": "SMU화이트",
+          "homeScore": 0,
+          "awayScore": 2,
+          "homeScorers": [],
+          "awayScorers": [
+            {
+              "name": "조성훈",
+              "minutes": [
+                4,
+                20
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 7,
+          "round": "7R",
+          "time": "13:50-14:35",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "대경",
+          "away": "충청",
+          "homeScore": 1,
+          "awayScore": 0,
+          "homeScorers": [
+            {
+              "name": "최형근",
+              "minutes": [
+                26
+              ]
+            }
+          ],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 7,
+          "round": "7R",
+          "time": "13:50-14:35",
+          "field": "2구장",
+          "leagueId": "veteran",
+          "home": "부산",
+          "away": "성남베테랑",
+          "homeScore": 2,
+          "awayScore": 1,
+          "homeScorers": [
+            {
+              "name": "박우진",
+              "minutes": [
+                7
+              ]
+            },
+            {
+              "name": "박종훈",
+              "minutes": [
+                22
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "차민수",
+              "minutes": [
+                34
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 7,
+          "round": "7R",
+          "time": "13:50-14:35",
+          "field": "3구장",
+          "leagueId": "young-a",
+          "home": "전남대OB",
+          "away": "SMU블루",
+          "homeScore": 2,
+          "awayScore": 1,
+          "homeScorers": [
+            {
+              "name": "김관범",
+              "minutes": [
+                33,
+                36
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "탁권용",
+              "minutes": [
+                17
+              ]
+            }
+          ]
+        },
+        {
+          "roundOrder": 8,
+          "round": "결승",
+          "time": "14:45-15:30",
+          "field": "1구장",
+          "leagueId": "young-a",
+          "home": "SMU블루",
+          "away": "SMU화이트",
+          "homeScore": 1,
+          "awayScore": 1,
+          "homeScorers": [
+            {
+              "name": "탁권용",
+              "minutes": [
+                12
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "강세호",
+              "minutes": [
+                30
+              ]
+            }
+          ],
+          "kind": "final",
+          "penaltyWinner": "SMU블루"
+        },
+        {
+          "roundOrder": 8,
+          "round": "결승",
+          "time": "14:45-15:30",
+          "field": "2구장",
+          "leagueId": "veteran",
+          "home": "FC Medicals",
+          "away": "부산",
+          "homeScore": 3,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 8,
+          "round": "결승",
+          "time": "14:45-15:30",
+          "field": "3구장",
+          "leagueId": "young-b",
+          "home": "건양대OB",
+          "away": "전남대OB",
+          "homeScore": 4,
+          "awayScore": 1,
+          "homeScorers": [
+            {
+              "name": "최재규",
+              "minutes": [
+                6
+              ]
+            },
+            {
+              "name": "김태형",
+              "minutes": [
+                13
+              ]
+            },
+            {
+              "name": "조형준",
+              "minutes": [
+                31,
+                35
+              ]
+            }
+          ],
+          "awayScorers": [
+            {
+              "name": "서동옥",
+              "minutes": [
+                30
+              ]
+            }
+          ],
+          "kind": "third_place"
+        }
+      ],
+      "awards": {
+        "young": {
+          "title": "영맨 리그",
+          "leagueKey": "young-a",
+          "champion": "SMU 블루 (승부차기)",
+          "runnerUp": "SMU 화이트",
+          "thirdPlace": "건양대OB",
+          "topScorer": {
+            "team": "건양대OB",
+            "name": "조형준",
+            "goals": 4
+          },
+          "mvp": {
+            "team": "SMU블루",
+            "name": "윤재신"
+          }
+        },
+        "veteran": {
+          "title": "베테랑 리그",
+          "leagueKey": "veteran",
+          "champion": "대경",
+          "runnerUp": "FC Medicals",
+          "topScorer": {
+            "team": "대경",
+            "name": "배진우",
+            "goals": 3
+          },
+          "mvp": {
+            "team": "충청",
+            "name": "오규한"
+          }
+        }
+      },
+      "id": "2026-spring"
+    },
+    {
+      "name": "2025 추계의사 축구대회",
+      "shortName": "2025 추계",
+      "season": "fall",
+      "year": 2025,
+      "date": "2025-11-30",
+      "venue": "대전 안영생활체육시설단지",
+      "leagues": [
+        {
+          "id": "young",
+          "name": "영맨",
+          "teams": [
+            "성남Y",
+            "건양대",
+            "원주",
+            "천안"
+          ]
+        },
+        {
+          "id": "veteran",
+          "name": "베테랑",
+          "teams": [
+            "성남",
+            "충청",
+            "FC Medicals",
+            "부산대"
+          ]
+        }
+      ],
+      "matches": [
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:30-09:20",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "성남",
+          "away": "충청",
+          "homeScore": 1,
+          "awayScore": 1,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:30-09:20",
+          "field": "2구장",
+          "leagueId": "young",
+          "home": "원주",
+          "away": "천안",
+          "homeScore": 3,
+          "awayScore": 1,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:30-09:20",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "건양대",
+          "away": "성남Y",
+          "homeScore": 1,
+          "awayScore": 5,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "10:00-10:50",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "부산대",
+          "away": "FC Medicals",
+          "homeScore": 0,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "10:00-10:50",
+          "field": "2구장",
+          "leagueId": "young",
+          "home": "성남Y",
+          "away": "천안",
+          "homeScore": 5,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "10:00-10:50",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "건양대",
+          "away": "원주",
+          "homeScore": 1,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "11:10-12:00",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "성남",
+          "away": "부산대",
+          "homeScore": 5,
+          "awayScore": 2,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "11:10-12:00",
+          "field": "2구장",
+          "leagueId": "veteran",
+          "home": "충청",
+          "away": "FC Medicals",
+          "homeScore": 1,
+          "awayScore": 1,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "11:10-12:00",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "성남Y",
+          "away": "원주",
+          "homeScore": 3,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "12:20-13:10",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "성남",
+          "away": "FC Medicals",
+          "homeScore": 1,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "12:20-13:10",
+          "field": "2구장",
+          "leagueId": "veteran",
+          "home": "충청",
+          "away": "부산대",
+          "homeScore": 1,
+          "awayScore": 1,
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "12:20-13:10",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "건양대",
+          "away": "천안",
+          "homeScore": 4,
+          "awayScore": 0,
+          "homeScorers": [],
+          "awayScorers": []
+        }
+      ],
+      "awards": {
+        "young": {
+          "title": "영맨 리그",
+          "leagueKey": "young",
+          "champion": "성남Y",
+          "runnerUp": "건양대",
+          "topScorer": {
+            "team": "건양대",
+            "name": "조형준",
+            "number": 10
+          },
+          "mvp": {
+            "team": "원주",
+            "name": "박수동",
+            "number": 33
+          }
+        },
+        "veteran": {
+          "title": "베테랑 리그",
+          "leagueKey": "veteran",
+          "champion": "성남",
+          "runnerUp": "충청",
+          "topScorer": {
+            "team": "성남",
+            "name": "탁권용",
+            "number": 96,
+            "wc": true
+          },
+          "mvp": {
+            "team": "부산대",
+            "name": "박종훈",
+            "number": 16
+          }
+        }
+      },
+      "id": "2025-fall"
+    }
+  ]
+}
