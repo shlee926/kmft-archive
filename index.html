@@ -699,19 +699,64 @@ body {
   color: var(--accent-strong);
   border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
   border-radius: var(--r-md);
-  padding: 14px 18px;
+  padding: 16px 20px;
   margin-bottom: 24px;
   font-size: 14px;
   line-height: 1.65;
 }
 .reg-intro strong { color: var(--accent); font-weight: 700; }
+.reg-deadlines {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed color-mix(in oklab, var(--accent) 25%, transparent);
+  display: grid;
+  gap: 8px;
+}
+.reg-deadline {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  font-size: 14px;
+}
+.reg-deadline .ddl-label {
+  font-weight: 600;
+  color: var(--accent-strong);
+  min-width: 160px;
+}
+.reg-deadline .ddl-value {
+  font-family: var(--f-numeric);
+  font-weight: 500;
+  color: var(--fg);
+  letter-spacing: 0.02em;
+}
+.reg-warning {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: color-mix(in oklab, var(--danger) 10%, transparent);
+  color: var(--danger);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 600;
+}
+.reg-notes {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--accent-strong);
+}
 
 :root[data-theme="dark"] .reg-intro,
-:root:not([data-theme="light"]) .reg-intro {
+:root[data-theme="dark"] .reg-deadline .ddl-label,
+:root[data-theme="dark"] .reg-notes,
+:root:not([data-theme="light"]) .reg-intro,
+:root:not([data-theme="light"]) .reg-deadline .ddl-label,
+:root:not([data-theme="light"]) .reg-notes {
   color: var(--fg);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .reg-intro {
+  :root:not([data-theme="light"]) .reg-intro,
+  :root:not([data-theme="light"]) .reg-deadline .ddl-label,
+  :root:not([data-theme="light"]) .reg-notes {
     color: var(--fg);
   }
 }
@@ -983,6 +1028,22 @@ function fmtDate(iso) {
   return `${y}년 ${+m}월 ${+d}일`;
 }
 
+function fmtDateTime(iso) {
+  if (!iso) return '';
+  const parts = iso.split('T');
+  const [y, mo, d] = parts[0].split('-').map(Number);
+  if (!y || !mo || !d) return iso;
+  const dateObj = new Date(y, mo - 1, d);
+  const dow = ['일','월','화','수','목','금','토'][dateObj.getDay()];
+  const base = `${y}년 ${mo}월 ${d}일 (${dow})`;
+  if (!parts[1]) return base;
+  const [h, mi] = parts[1].split(':').map(Number);
+  const ampm = h < 12 ? '오전' : '오후';
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  const timeStr = (mi === 0 || isNaN(mi)) ? `${ampm} ${h12}시` : `${ampm} ${h12}시 ${mi}분`;
+  return `${base} ${timeStr}`;
+}
+
 function leagueById(t, id) {
   return (t.leagues || []).find(l => l.id === id);
 }
@@ -1116,7 +1177,7 @@ function renderHero() {
   if (t.registration && t.registration.open) {
     const badge = el('div', { class: 'registration-badge' }, [
       el('span', { class: 'dot' }),
-      el('span', {}, '참가 접수중' + (t.registration.deadline ? ` · 마감 ${fmtDate(t.registration.deadline)}` : '')),
+      el('span', {}, '참가 접수중'),
     ]);
     hero.appendChild(badge);
   }
@@ -1422,10 +1483,37 @@ function renderRegister(panel, t) {
   const email = reg.contactEmail || 'epiphany.h92@gmail.com';
 
   const intro = el('div', { class: 'reg-intro' });
-  const parts = [`<strong>${escapeHtml(t.name)}</strong> 참가 접수중입니다. 아래 양식에 입력 후 제출하시면 운영진에게 자동으로 전달됩니다.`];
-  if (reg.deadline) parts.push(`접수 마감: <strong>${fmtDate(reg.deadline)}</strong>`);
-  if (reg.notes) parts.push(reg.notes);
-  intro.innerHTML = parts.join('<br>');
+  const header = el('div', {}, [
+    el('strong', {}, t.name),
+    ' 참가 접수중입니다. 아래 양식에 입력 후 제출하시면 운영진에게 자동으로 전달됩니다.',
+  ]);
+  intro.appendChild(header);
+
+  // Deadlines block
+  const deadlines = [];
+  if (reg.teamDeadline) deadlines.push({ icon: '🏳️', label: '팀 참가 신청 마감', iso: reg.teamDeadline });
+  if (reg.playerDeadline) deadlines.push({ icon: '👤', label: '선수 등록 마감', iso: reg.playerDeadline });
+  if (!deadlines.length && reg.deadline) {
+    deadlines.push({ icon: '📅', label: '접수 마감', iso: reg.deadline });
+  }
+  if (deadlines.length) {
+    const ddl = el('div', { class: 'reg-deadlines' });
+    for (const d of deadlines) {
+      ddl.appendChild(el('div', { class: 'reg-deadline' }, [
+        el('span', { class: 'ddl-label' }, `${d.icon} ${d.label}`),
+        el('span', { class: 'ddl-value' }, fmtDateTime(d.iso)),
+      ]));
+    }
+    intro.appendChild(ddl);
+  }
+
+  if (reg.lateRegistrationWarning !== false && (reg.teamDeadline || reg.playerDeadline || reg.lateRegistrationWarning)) {
+    intro.appendChild(el('div', { class: 'reg-warning' }, '⚠️ 선수 등록 기한 이후의 등록은 인정되지 않습니다.'));
+  }
+
+  if (reg.notes) {
+    intro.appendChild(el('div', { class: 'reg-notes' }, reg.notes));
+  }
   panel.appendChild(intro);
 
   const tabs = el('div', { class: 'reg-tabs' });
