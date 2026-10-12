@@ -1593,7 +1593,7 @@ function renderPlayerForm(t, email) {
   form.appendChild(submitBtn);
 
   card.appendChild(form);
-  setTimeout(() => { for (let i = 0; i < 3; i++) addRosterRow(form); }, 0);
+  setTimeout(() => { for (let i = 0; i < 11; i++) addRosterRow(form); }, 0);
   return card;
 }
 
@@ -1758,7 +1758,7 @@ async function submitPlayerForm(t, email, form) {
       form.reset();
       // Re-add empty roster rows after reset
       const tbody = form.querySelector('#roster-body');
-      if (tbody) { tbody.innerHTML = ''; for (let i = 0; i < 3; i++) addRosterRow(form); }
+      if (tbody) { tbody.innerHTML = ''; for (let i = 0; i < 11; i++) addRosterRow(form); }
       if (btn) { btn.disabled = false; btn.textContent = '📝 선수 명단 제출'; }
       return;
     } catch (e) {
