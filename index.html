@@ -1539,9 +1539,9 @@ function renderTeamForm(t, email) {
       radioOpt('league', 'veteran', '베테랑'),
     ])
   ));
-  form.appendChild(formRow('팀명', true, el('input', { type: 'text', name: 'teamName', required: 'required', placeholder: '예) SMU 블루' })));
-  form.appendChild(formRow('단장 성함', true, el('input', { type: 'text', name: 'captain', required: 'required', placeholder: '예) 이상훈' })));
-  form.appendChild(formRow('연락처 (전화/카톡 ID)', false, el('input', { type: 'text', name: 'contact', placeholder: '010-0000-0000' })));
+  form.appendChild(formRow('팀명', true, el('input', { type: 'text', name: 'teamName', required: 'required' })));
+  form.appendChild(formRow('단장 성함', true, el('input', { type: 'text', name: 'captain', required: 'required' })));
+  form.appendChild(formRow('연락처', false, el('input', { type: 'tel', name: 'contact', placeholder: '010-0000-0000', inputmode: 'tel' })));
   form.appendChild(formRow('비고 (선택)', false, el('textarea', { name: 'notes', rows: '2', placeholder: '전달사항이 있다면 적어주세요' })));
 
   const btnRow = el('div', { class: 'btn-row' }, [
