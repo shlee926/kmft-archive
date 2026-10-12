@@ -1471,7 +1471,8 @@ function renderPlayerForm(t, email) {
 
   const rosterHead = el('div', {}, [
     el('label', {}, '선수 명단 (여러 명 등록 가능)'),
-    el('div', { class: 'hint', style: 'margin-bottom:8px' }, '한 번에 모든 선수를 입력하신 뒤 제출하시면 한 통의 메일로 발송됩니다.'),
+    el('div', { class: 'hint', style: 'margin-bottom:8px' },
+      '한 번에 모든 선수를 입력하여 제출 부탁드립니다. 제출 후 변경·추가되는 선수가 있을 경우 변경된 분만 제출해주시면 됩니다.'),
   ]);
   form.appendChild(rosterHead);
 
@@ -1485,6 +1486,13 @@ function renderPlayerForm(t, email) {
 
   const addBtn = el('button', { type: 'button', class: 'btn btn-secondary', style: 'margin-top:10px', onclick: () => addRosterRow(form) }, '➕ 선수 추가');
   form.appendChild(addBtn);
+
+  const notesField = formRow('비고 (선택)', false, el('textarea', {
+    name: 'notes', rows: '3',
+    placeholder: '수정·변경 사항이 있다면 여기에 적어주세요. (예: 7번 홍길동 소속병원 A→B 변경 / 23번 이순신 등번호 변경 요청)'
+  }));
+  notesField.style.marginTop = '20px';
+  form.appendChild(notesField);
 
   const submitBtn = el('div', { class: 'btn-row' }, [
     el('button', { type: 'submit', class: 'btn btn-primary' }, '📝 선수 명단 제출'),
@@ -1627,6 +1635,7 @@ async function submitTeamForm(t, email, form) {
 async function submitPlayerForm(t, email, form) {
   const teamName = (form.querySelector('[name="teamName"]').value || '').trim();
   const captain = (form.querySelector('[name="captain"]').value || '').trim();
+  const notes = (form.querySelector('[name="notes"]').value || '').trim();
   const rows = form.querySelectorAll('#roster-body tr');
   const players = [];
   rows.forEach(tr => {
@@ -1649,7 +1658,7 @@ async function submitPlayerForm(t, email, form) {
         type: 'players',
         tournamentId: t.id,
         tournamentName: t.name,
-        teamName, captain, players,
+        teamName, captain, notes, players,
         submittedAt: new Date().toISOString(),
       });
       showToast(`✅ ${players.length}명의 선수가 등록되었습니다.`);
@@ -1674,6 +1683,7 @@ async function submitPlayerForm(t, email, form) {
   players.forEach((p, i) => {
     bodyLines.push(`${i + 1}. ${p.name || '-'} / ${p.number || '-'} / ${p.birth || '-'} / ${p.hospital || '-'}`);
   });
+  if (notes) bodyLines.push('', '비고:', notes);
   window.location.href = buildMailtoUrl(email, subject, bodyLines.join('\n'));
   if (btn) { btn.disabled = false; btn.textContent = '📝 선수 명단 제출'; }
 }
