@@ -1535,14 +1535,46 @@ function showToast(msg, variant = 'ok', duration = 4000) {
   window._toastTimer = setTimeout(() => t.classList.remove('show'), duration);
 }
 
-async function postToSheets(endpoint, payload) {
-  // Use text/plain to avoid CORS preflight; Apps Script parses JSON from body regardless.
-  // mode: 'no-cors' prevents reading response but request still goes through.
-  await fetch(endpoint, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-    body: JSON.stringify(payload),
+function postToSheets(endpoint, payload) {
+  // Google Apps Script Web Apps don't play well with fetch+no-cors due to a 302 redirect
+  // step that strips CORS headers. The reliable pattern is a hidden iframe form POST,
+  // which the browser handles natively.
+  return new Promise((resolve, reject) => {
+    const iframeName = 'kmft-submit-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+    const iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.action = endpoint;
+    form.method = 'POST';
+    form.target = iframeName;
+    form.enctype = 'application/x-www-form-urlencoded';
+    form.acceptCharset = 'UTF-8';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+
+    let settled = false;
+    const cleanup = (ok) => {
+      if (settled) return;
+      settled = true;
+      try { form.remove(); } catch {}
+      setTimeout(() => { try { iframe.remove(); } catch {} }, 1500);
+      if (ok) resolve(); else reject(new Error('submission timed out'));
+    };
+
+    iframe.addEventListener('load', () => setTimeout(() => cleanup(true), 200));
+    // Hard timeout in case iframe never fires load (shouldn't happen but defensive)
+    setTimeout(() => cleanup(true), 8000);
+
+    try { form.submit(); } catch (e) { cleanup(false); }
   });
 }
 
