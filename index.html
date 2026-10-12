@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>의사축구 아카이브</title>
+<title>의사축구대회 아카이브</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230D5932'/%3E%3Ccircle cx='50' cy='50' r='28' fill='none' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
@@ -917,7 +917,7 @@ body {
   <div class="topbar-inner">
     <div class="brand">
       <span class="mark" aria-hidden="true"></span>
-      <span>의사축구 아카이브 <small>· 대한의사축구연맹</small></span>
+      <span>의사축구대회 아카이브 <small>· 대한의사축구연맹</small></span>
     </div>
     <div class="tour-pills" id="tour-pills" role="tablist"></div>
     <button class="theme-toggle" id="theme-toggle" aria-label="테마 전환" title="테마 전환">◐</button>
@@ -1103,7 +1103,7 @@ function renderHero() {
   const t = tournaments[currentTournamentId];
   if (!t) {
     hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
-    hero.appendChild(el('h1', { class: 'hero-title' }, '의사축구 아카이브'));
+    hero.appendChild(el('h1', { class: 'hero-title' }, '의사축구대회 아카이브'));
     hero.appendChild(el('div', { class: 'hero-meta' }, el('span', {}, '등록된 대회가 없습니다.')));
     return;
   }
