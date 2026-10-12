@@ -1485,7 +1485,9 @@ function renderRegister(panel, t) {
   const intro = el('div', { class: 'reg-intro' });
   const header = el('div', {}, [
     el('strong', {}, t.name),
-    ' 참가 접수중입니다. 아래 양식에 입력 후 제출하시면 운영진에게 자동으로 전달됩니다.',
+    ' 참가 접수중입니다.',
+    el('br'),
+    '아래 양식에 입력 후 제출하시면 운영진에게 자동으로 전달됩니다.',
   ]);
   intro.appendChild(header);
 
