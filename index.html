@@ -1556,8 +1556,8 @@ function renderPlayerForm(t, email) {
   const card = el('div', { class: 'form-card' });
   const form = el('form', { onsubmit: (e) => { e.preventDefault(); submitPlayerForm(t, email, form); } });
 
-  form.appendChild(formRow('팀명', true, el('input', { type: 'text', name: 'teamName', required: 'required', placeholder: '예) SMU 블루' })));
-  form.appendChild(formRow('단장/코치 성함', false, el('input', { type: 'text', name: 'captain', placeholder: '선수 등록 담당자' })));
+  form.appendChild(formRow('팀명', true, el('input', { type: 'text', name: 'teamName', required: 'required' })));
+  form.appendChild(formRow('단장 성함', false, el('input', { type: 'text', name: 'captain' })));
 
   const rosterHead = el('div', {}, [
     el('label', {}, '선수 명단 (여러 명 등록 가능)'),
