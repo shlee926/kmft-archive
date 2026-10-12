@@ -877,18 +877,30 @@ body {
 }
 .btn-secondary:hover { background: var(--surface-2); }
 
-/* === Footer === */
-.footer-note {
-  margin-top: 48px;
-  padding: 18px 20px;
+/* === Toast === */
+.toast {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent);
+  color: var(--fg);
+  padding: 14px 22px;
   border-radius: var(--r-md);
-  font-size: 13px;
-  color: var(--fg-muted);
-  line-height: 1.65;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.18);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+  line-height: 1.5;
 }
-.footer-note strong { color: var(--fg); font-weight: 700; display: block; margin-bottom: 4px; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { border-color: var(--danger); }
 
 .empty {
   padding: 72px 20px;
@@ -923,15 +935,13 @@ body {
     <button class="tab" data-tab="register" role="tab">참가 신청</button>
   </div>
   <div id="panel" class="panel"></div>
-  <div class="footer-note">
-    <strong>경기 결과 업데이트 안내</strong>
-    대회 당일 경기기록지 사진 또는 결과 텍스트를 운영자(Claude 대화)로 전달해주시면 사이트에 반영됩니다.
-  </div>
 </div>
 
 <div class="lightbox" id="lightbox" role="dialog" aria-label="이미지 확대 보기">
   <img id="lightbox-img" alt="">
 </div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 // =========================================================
@@ -1412,7 +1422,7 @@ function renderRegister(panel, t) {
   const email = reg.contactEmail || 'epiphany.h92@gmail.com';
 
   const intro = el('div', { class: 'reg-intro' });
-  const parts = [`<strong>${escapeHtml(t.name)}</strong> 참가 접수중입니다. 아래 양식을 작성하신 뒤 제출하면 기본 메일 앱이 열립니다. 수신인(운영진)이 자동 입력되어 있으니 그대로 보내주세요.`];
+  const parts = [`<strong>${escapeHtml(t.name)}</strong> 참가 접수중입니다. 아래 양식에 입력 후 제출하시면 운영진에게 자동으로 전달됩니다.`];
   if (reg.deadline) parts.push(`접수 마감: <strong>${fmtDate(reg.deadline)}</strong>`);
   if (reg.notes) parts.push(reg.notes);
   intro.innerHTML = parts.join('<br>');
@@ -1445,7 +1455,7 @@ function renderTeamForm(t, email) {
   form.appendChild(formRow('비고 (선택)', false, el('textarea', { name: 'notes', rows: '2', placeholder: '전달사항이 있다면 적어주세요' })));
 
   const btnRow = el('div', { class: 'btn-row' }, [
-    el('button', { type: 'submit', class: 'btn btn-primary' }, '📧 신청서 보내기 (메일 앱 열기)'),
+    el('button', { type: 'submit', class: 'btn btn-primary' }, '📝 참가 신청 제출'),
   ]);
   form.appendChild(btnRow);
   card.appendChild(form);
@@ -1477,7 +1487,7 @@ function renderPlayerForm(t, email) {
   form.appendChild(addBtn);
 
   const submitBtn = el('div', { class: 'btn-row' }, [
-    el('button', { type: 'submit', class: 'btn btn-primary' }, '📧 선수 명단 보내기 (메일 앱 열기)'),
+    el('button', { type: 'submit', class: 'btn btn-primary' }, '📝 선수 명단 제출'),
   ]);
   form.appendChild(submitBtn);
 
@@ -1515,7 +1525,32 @@ function radioOpt(name, value, label) {
   return l;
 }
 
-function submitTeamForm(t, email, form) {
+function showToast(msg, variant = 'ok', duration = 4000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('error');
+  if (variant === 'error') t.classList.add('error');
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+}
+
+async function postToSheets(endpoint, payload) {
+  // Use text/plain to avoid CORS preflight; Apps Script parses JSON from body regardless.
+  // mode: 'no-cors' prevents reading response but request still goes through.
+  await fetch(endpoint, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify(payload),
+  });
+}
+
+function buildMailtoUrl(to, subject, body) {
+  return `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+async function submitTeamForm(t, email, form) {
   const data = new FormData(form);
   const league = data.get('league');
   const leagueName = league === 'young' ? '영맨' : league === 'veteran' ? '베테랑' : league;
@@ -1524,22 +1559,40 @@ function submitTeamForm(t, email, form) {
   const contact = (data.get('contact') || '').trim();
   const notes = (data.get('notes') || '').trim();
 
+  const endpoint = t.registration && t.registration.apiEndpoint;
+  const btn = form.querySelector('button[type="submit"]');
+  if (btn) { btn.disabled = true; btn.textContent = '전송 중...'; }
+
+  if (endpoint) {
+    try {
+      await postToSheets(endpoint, {
+        type: 'team',
+        tournamentId: t.id,
+        tournamentName: t.name,
+        league: leagueName,
+        teamName, captain, contact, notes,
+        submittedAt: new Date().toISOString(),
+      });
+      showToast('✅ 참가 신청이 접수되었습니다. 운영진이 확인 후 안내드리겠습니다.');
+      form.reset();
+      if (btn) { btn.disabled = false; btn.textContent = '📝 참가 신청 제출'; }
+      return;
+    } catch (e) {
+      console.error('API submit failed', e);
+      showToast('⚠️ 접수 중 오류가 발생했습니다. 메일로 전송합니다.', 'error');
+    }
+  }
+
+  // Fallback: mailto
   const subject = `[${t.shortName || t.name} 참가신청] ${leagueName} - ${teamName}`;
-  const bodyLines = [
-    `대회: ${t.name}`,
-    `리그: ${leagueName}`,
-    `팀명: ${teamName}`,
-    `단장: ${captain}`,
-  ];
+  const bodyLines = [`대회: ${t.name}`, `리그: ${leagueName}`, `팀명: ${teamName}`, `단장: ${captain}`];
   if (contact) bodyLines.push(`연락처: ${contact}`);
   if (notes) bodyLines.push('', '비고:', notes);
-  bodyLines.push('', '--', '본 메일은 의사축구 아카이브 참가 신청 폼에서 자동 생성되었습니다.');
-
-  const url = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
-  window.location.href = url;
+  window.location.href = buildMailtoUrl(email, subject, bodyLines.join('\n'));
+  if (btn) { btn.disabled = false; btn.textContent = '📝 참가 신청 제출'; }
 }
 
-function submitPlayerForm(t, email, form) {
+async function submitPlayerForm(t, email, form) {
   const teamName = (form.querySelector('[name="teamName"]').value || '').trim();
   const captain = (form.querySelector('[name="captain"]').value || '').trim();
   const rows = form.querySelectorAll('#roster-body tr');
@@ -1554,21 +1607,43 @@ function submitPlayerForm(t, email, form) {
   if (!teamName) { alert('팀명을 입력해주세요.'); return; }
   if (!players.length) { alert('최소 1명 이상의 선수를 입력해주세요.'); return; }
 
+  const endpoint = t.registration && t.registration.apiEndpoint;
+  const btn = form.querySelector('button[type="submit"]');
+  if (btn) { btn.disabled = true; btn.textContent = '전송 중...'; }
+
+  if (endpoint) {
+    try {
+      await postToSheets(endpoint, {
+        type: 'players',
+        tournamentId: t.id,
+        tournamentName: t.name,
+        teamName, captain, players,
+        submittedAt: new Date().toISOString(),
+      });
+      showToast(`✅ ${players.length}명의 선수가 등록되었습니다.`);
+      form.reset();
+      // Re-add empty roster rows after reset
+      const tbody = form.querySelector('#roster-body');
+      if (tbody) { tbody.innerHTML = ''; for (let i = 0; i < 3; i++) addRosterRow(form); }
+      if (btn) { btn.disabled = false; btn.textContent = '📝 선수 명단 제출'; }
+      return;
+    } catch (e) {
+      console.error('API submit failed', e);
+      showToast('⚠️ 접수 중 오류가 발생했습니다. 메일로 전송합니다.', 'error');
+    }
+  }
+
+  // Fallback: mailto
   const subject = `[${t.shortName || t.name} 선수등록] ${teamName} (${players.length}명)`;
-  const bodyLines = [
-    `대회: ${t.name}`,
-    `팀명: ${teamName}`,
-  ];
+  const bodyLines = [`대회: ${t.name}`, `팀명: ${teamName}`];
   if (captain) bodyLines.push(`담당자: ${captain}`);
   bodyLines.push('', `선수 명단 (${players.length}명):`);
   bodyLines.push('이름 / 등번호 / 출생연도 / 소속병원');
   players.forEach((p, i) => {
     bodyLines.push(`${i + 1}. ${p.name || '-'} / ${p.number || '-'} / ${p.birth || '-'} / ${p.hospital || '-'}`);
   });
-  bodyLines.push('', '--', '본 메일은 의사축구 아카이브 선수 등록 폼에서 자동 생성되었습니다.');
-
-  const url = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
-  window.location.href = url;
+  window.location.href = buildMailtoUrl(email, subject, bodyLines.join('\n'));
+  if (btn) { btn.disabled = false; btn.textContent = '📝 선수 명단 제출'; }
 }
 
 // =========================================================
