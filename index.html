@@ -1038,9 +1038,15 @@ function fmtDateTime(iso) {
   const base = `${y}년 ${mo}월 ${d}일 (${dow})`;
   if (!parts[1]) return base;
   const [h, mi] = parts[1].split(':').map(Number);
-  const ampm = h < 12 ? '오전' : '오후';
-  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  const timeStr = (mi === 0 || isNaN(mi)) ? `${ampm} ${h12}시` : `${ampm} ${h12}시 ${mi}분`;
+  // Round hours → 오전/오후 N시 (e.g. "오후 12시"); non-zero minutes → 24-hour HH:MM (e.g. "23:59")
+  let timeStr;
+  if (mi === 0 || isNaN(mi)) {
+    const ampm = h < 12 ? '오전' : '오후';
+    const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    timeStr = `${ampm} ${h12}시`;
+  } else {
+    timeStr = `${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`;
+  }
   return `${base} ${timeStr}`;
 }
 
@@ -1503,7 +1509,7 @@ function renderRegister(panel, t) {
     for (const d of deadlines) {
       ddl.appendChild(el('div', { class: 'reg-deadline' }, [
         el('span', { class: 'ddl-label' }, `${d.icon} ${d.label}`),
-        el('span', { class: 'ddl-value' }, fmtDateTime(d.iso)),
+        el('span', { class: 'ddl-value' }, fmtDateTime(d.iso) + '까지'),
       ]));
     }
     intro.appendChild(ddl);
