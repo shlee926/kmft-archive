@@ -1056,6 +1056,7 @@ body {
   padding: 0 7px;
   letter-spacing: 0.02em;
 }
+.player-num.veteran { background: var(--veteran); color: #fff; }
 .player-name { font-weight: 500; color: var(--fg); }
 .status-footer {
   margin-top: 20px;
@@ -1906,6 +1907,22 @@ function renderStatusData(body, t, data) {
   body.appendChild(teamsSec);
 
   // Players section (grouped by team)
+  // Build team → set of leagues from team registrations so we can color veteran-only teams differently.
+  // Ambiguous teams (registered in both leagues) stay at default color because the player row has no league.
+  const teamLeagues = {};
+  teams.forEach(team => {
+    const name = (team.teamName || '').trim();
+    const lg = (team.league || '').trim();
+    if (!name) return;
+    (teamLeagues[name] = teamLeagues[name] || new Set()).add(lg);
+  });
+  const isVeteranOnly = (team) => {
+    const set = teamLeagues[team];
+    if (!set || set.size === 0) return false;
+    if (set.size > 1) return false;
+    return [...set][0].indexOf('베테랑') !== -1 || [...set][0].toLowerCase() === 'veteran';
+  };
+
   const playersSec = el('div', { class: 'status-section' });
   playersSec.appendChild(el('h3', { class: 'status-section-title' }, `👤 선수 등록 (${players.length}명)`));
   if (!players.length) {
@@ -1923,6 +1940,7 @@ function renderStatusData(body, t, data) {
     const teamNames = Object.keys(byTeam).sort((a, b) => a.localeCompare(b, 'ko'));
     for (const team of teamNames) {
       const list = byTeam[team];
+      const veteran = isVeteranOnly(team);
       // Dedupe: same name → keep last occurrence (latest edit)
       const seen = new Map();
       list.forEach(p => seen.set((p.name || '').trim(), p));
@@ -1942,7 +1960,7 @@ function renderStatusData(body, t, data) {
       unique.forEach(p => {
         const num = p.number ? String(p.number).trim() : '';
         const chip = el('div', { class: 'player-chip' });
-        if (num) chip.appendChild(el('span', { class: 'player-num' }, num));
+        if (num) chip.appendChild(el('span', { class: 'player-num' + (veteran ? ' veteran' : '') }, num));
         chip.appendChild(el('span', { class: 'player-name' }, p.name || '-'));
         playersGrid.appendChild(chip);
       });
