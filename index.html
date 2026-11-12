@@ -922,6 +922,150 @@ body {
 }
 .btn-secondary:hover { background: var(--surface-2); }
 
+/* === Registration status view === */
+.status-wrap { max-width: 920px; }
+.status-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.status-intro {
+  font-size: 14px;
+  color: var(--fg-muted);
+  line-height: 1.65;
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.status-intro strong { color: var(--fg); font-weight: 700; }
+.status-reload {
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 7px 14px;
+}
+.status-loading {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 14px;
+}
+.status-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  text-align: center;
+}
+.stat-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+.stat-value {
+  font-family: var(--f-numeric);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+.status-section { margin-bottom: 32px; }
+.status-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--divider);
+  letter-spacing: 0.005em;
+}
+.status-league-block {
+  margin-bottom: 16px;
+}
+.status-league-label {
+  font-family: var(--f-numeric);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.status-team-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.status-team-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--divider);
+}
+.status-team-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--fg);
+}
+.status-team-count {
+  font-family: var(--f-numeric);
+  font-size: 12px;
+  color: var(--fg-muted);
+  letter-spacing: 0.05em;
+}
+.status-players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 5px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  font-size: 13px;
+}
+.player-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 999px;
+  font-family: var(--f-numeric);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 0 7px;
+  letter-spacing: 0.02em;
+}
+.player-name { font-weight: 500; color: var(--fg); }
+.status-footer {
+  margin-top: 20px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--fg-muted);
+  font-family: var(--f-numeric);
+  letter-spacing: 0.04em;
+}
+
 /* === Toast === */
 .toast {
   position: fixed;
@@ -1527,12 +1671,15 @@ function renderRegister(panel, t) {
   const tabs = el('div', { class: 'reg-tabs' });
   const teamTab = el('button', { class: 'reg-tab', 'aria-selected': currentRegTab === 'team' ? 'true' : 'false', onclick: () => { currentRegTab = 'team'; renderPanel(); } }, '🏳️ 팀 참가 신청');
   const playerTab = el('button', { class: 'reg-tab', 'aria-selected': currentRegTab === 'player' ? 'true' : 'false', onclick: () => { currentRegTab = 'player'; renderPanel(); } }, '👤 선수 등록');
+  const statusTab = el('button', { class: 'reg-tab', 'aria-selected': currentRegTab === 'status' ? 'true' : 'false', onclick: () => { currentRegTab = 'status'; renderPanel(); } }, '📋 등록 현황');
   tabs.appendChild(teamTab);
   tabs.appendChild(playerTab);
+  tabs.appendChild(statusTab);
   panel.appendChild(tabs);
 
   if (currentRegTab === 'team') panel.appendChild(renderTeamForm(t, email));
-  else panel.appendChild(renderPlayerForm(t, email));
+  else if (currentRegTab === 'player') panel.appendChild(renderPlayerForm(t, email));
+  else panel.appendChild(renderStatusView(t));
 }
 
 function renderTeamForm(t, email) {
@@ -1630,6 +1777,187 @@ function radioOpt(name, value, label) {
   l.appendChild(el('input', { type: 'radio', name, value, required: 'required' }));
   l.appendChild(document.createTextNode(label));
   return l;
+}
+
+// =========================================================
+// Registration status view
+// =========================================================
+const statusCache = {};   // { tournamentId: { teams:[], players:[], fetchedAt } }
+const statusLoading = {}; // { tournamentId: boolean }
+
+function renderStatusView(t) {
+  const container = el('div', { class: 'status-wrap' });
+
+  const header = el('div', { class: 'status-head' });
+  header.appendChild(el('div', { class: 'status-intro' }, [
+    '현재까지 접수된 ',
+    el('strong', {}, '팀'),
+    '과 ',
+    el('strong', {}, '선수'),
+    ' 현황입니다. 선수는 개인정보 보호를 위해 이름·등번호만 표시됩니다.',
+  ]));
+  const reloadBtn = el('button', {
+    type: 'button',
+    class: 'btn btn-secondary status-reload',
+    onclick: () => { delete statusCache[t.id]; renderPanel(); },
+  }, '🔄 새로고침');
+  header.appendChild(reloadBtn);
+  container.appendChild(header);
+
+  const body = el('div', { id: 'status-body' });
+  container.appendChild(body);
+
+  loadStatus(t, body);
+  return container;
+}
+
+async function loadStatus(t, body) {
+  const endpoint = t.registration && t.registration.apiEndpoint;
+  if (!endpoint) {
+    body.appendChild(el('div', { class: 'empty' }, '등록 현황을 조회할 수 없습니다.'));
+    return;
+  }
+
+  // Serve from cache if fresh (< 30s)
+  const cached = statusCache[t.id];
+  if (cached && (Date.now() - cached.fetchedAt) < 30000) {
+    renderStatusData(body, t, cached);
+    return;
+  }
+
+  if (statusLoading[t.id]) {
+    body.appendChild(el('div', { class: 'status-loading' }, '불러오는 중...'));
+    return;
+  }
+  statusLoading[t.id] = true;
+  body.appendChild(el('div', { class: 'status-loading' }, '불러오는 중...'));
+
+  try {
+    const url = endpoint + '?action=status&tournamentId=' + encodeURIComponent(t.id);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    statusCache[t.id] = {
+      teams: data.teams || [],
+      players: data.players || [],
+      fetchedAt: Date.now(),
+    };
+    body.innerHTML = '';
+    renderStatusData(body, t, statusCache[t.id]);
+  } catch (e) {
+    console.error('status fetch failed', e);
+    body.innerHTML = '';
+    body.appendChild(el('div', { class: 'empty' }, '등록 현황을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'));
+  } finally {
+    statusLoading[t.id] = false;
+  }
+}
+
+function renderStatusData(body, t, data) {
+  const teams = data.teams || [];
+  const players = data.players || [];
+
+  // Overview stats
+  const stats = el('div', { class: 'status-stats' });
+  const leagueCounts = {};
+  teams.forEach(team => {
+    const lg = (team.league || '').trim() || '미지정';
+    leagueCounts[lg] = (leagueCounts[lg] || 0) + 1;
+  });
+  stats.appendChild(el('div', { class: 'stat-card' }, [
+    el('div', { class: 'stat-label' }, '신청 팀'),
+    el('div', { class: 'stat-value' }, String(teams.length)),
+  ]));
+  stats.appendChild(el('div', { class: 'stat-card' }, [
+    el('div', { class: 'stat-label' }, '등록 선수 (중복 포함)'),
+    el('div', { class: 'stat-value' }, String(players.length)),
+  ]));
+  for (const [lg, cnt] of Object.entries(leagueCounts)) {
+    stats.appendChild(el('div', { class: 'stat-card' }, [
+      el('div', { class: 'stat-label' }, `${lg} 리그`),
+      el('div', { class: 'stat-value' }, String(cnt)),
+    ]));
+  }
+  body.appendChild(stats);
+
+  // Teams section
+  const teamsSec = el('div', { class: 'status-section' });
+  teamsSec.appendChild(el('h3', { class: 'status-section-title' }, `🏳️ 등록팀 (${teams.length}팀)`));
+  if (!teams.length) {
+    teamsSec.appendChild(el('div', { class: 'empty', style: 'padding:20px' }, '아직 신청한 팀이 없습니다.'));
+  } else {
+    // Group by league
+    const byLeague = {};
+    teams.forEach(team => {
+      const lg = (team.league || '').trim() || '미지정';
+      (byLeague[lg] = byLeague[lg] || []).push(team);
+    });
+    for (const [lg, list] of Object.entries(byLeague)) {
+      const lgBlock = el('div', { class: 'status-league-block' });
+      lgBlock.appendChild(el('div', { class: 'status-league-label' }, `${lg} · ${list.length}팀`));
+      const chips = el('div', { class: 'teams-chips' });
+      list.forEach(team => {
+        chips.appendChild(el('span', { class: 'team-chip' }, team.teamName || '-'));
+      });
+      lgBlock.appendChild(chips);
+      teamsSec.appendChild(lgBlock);
+    }
+  }
+  body.appendChild(teamsSec);
+
+  // Players section (grouped by team)
+  const playersSec = el('div', { class: 'status-section' });
+  playersSec.appendChild(el('h3', { class: 'status-section-title' }, `👤 선수 등록 (${players.length}명)`));
+  if (!players.length) {
+    playersSec.appendChild(el('div', { class: 'empty', style: 'padding:20px' }, '아직 등록된 선수가 없습니다.'));
+  } else {
+    // Group by team, dedupe by (team + name) keeping the latest submitted entry
+    const byTeam = {};
+    players.forEach(p => {
+      const team = (p.teamName || '-').trim();
+      const name = (p.name || '').trim();
+      if (!name) return;
+      (byTeam[team] = byTeam[team] || []).push(p);
+    });
+    // Sort teams alphabetically, players within team by number asc then name
+    const teamNames = Object.keys(byTeam).sort((a, b) => a.localeCompare(b, 'ko'));
+    for (const team of teamNames) {
+      const list = byTeam[team];
+      // Dedupe: same name → keep last occurrence (latest edit)
+      const seen = new Map();
+      list.forEach(p => seen.set((p.name || '').trim(), p));
+      const unique = [...seen.values()].sort((a, b) => {
+        const na = parseInt(a.number, 10), nb = parseInt(b.number, 10);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        if (!isNaN(na)) return -1;
+        if (!isNaN(nb)) return 1;
+        return (a.name || '').localeCompare(b.name || '', 'ko');
+      });
+      const block = el('div', { class: 'status-team-block' });
+      block.appendChild(el('div', { class: 'status-team-head' }, [
+        el('span', { class: 'status-team-name' }, team),
+        el('span', { class: 'status-team-count' }, `${unique.length}명`),
+      ]));
+      const playersGrid = el('div', { class: 'status-players' });
+      unique.forEach(p => {
+        const num = p.number ? String(p.number).trim() : '';
+        const chip = el('div', { class: 'player-chip' });
+        if (num) chip.appendChild(el('span', { class: 'player-num' }, num));
+        chip.appendChild(el('span', { class: 'player-name' }, p.name || '-'));
+        playersGrid.appendChild(chip);
+      });
+      block.appendChild(playersGrid);
+      playersSec.appendChild(block);
+    }
+  }
+  body.appendChild(playersSec);
+
+  // Footer: last updated
+  const dt = new Date(data.fetchedAt);
+  const hh = String(dt.getHours()).padStart(2, '0');
+  const mm = String(dt.getMinutes()).padStart(2, '0');
+  const ss = String(dt.getSeconds()).padStart(2, '0');
+  body.appendChild(el('div', { class: 'status-footer' }, `업데이트: ${hh}:${mm}:${ss}`));
 }
 
 function showToast(msg, variant = 'ok', duration = 4000) {
