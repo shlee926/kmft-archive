@@ -953,6 +953,14 @@ body {
   min-width: 0;
 }
 .status-intro strong { color: var(--fg); font-weight: 700; }
+.wc-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
 .status-reload {
   flex-shrink: 0;
   font-size: 13px;
@@ -1070,6 +1078,22 @@ body {
   letter-spacing: 0.02em;
 }
 .player-num.veteran { background: var(--veteran); color: #fff; }
+.player-wc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  height: 18px;
+  background: var(--gold);
+  color: #fff;
+  border-radius: 3px;
+  font-family: var(--f-numeric);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  margin-left: 2px;
+}
+.player-chip.wc { background: color-mix(in oklab, var(--gold) 15%, var(--surface-2)); }
 .player-name { font-weight: 500; color: var(--fg); }
 .status-footer {
   margin-top: 20px;
@@ -1220,9 +1244,26 @@ function hasTabContent(t, tab) {
     case 'standings': return !!(t.matches && t.matches.length && t.leagues && t.leagues.length);
     case 'awards':    return !!(t.awards && Object.keys(t.awards).length);
     case 'teams':     return !!(t.leagues && t.leagues.length);
-    case 'register':  return !!(t.registration && t.registration.open);
+    case 'register':  return !!(t.registration && (t.registration.open || t.registration.apiEndpoint));
   }
   return false;
+}
+
+const DEFAULT_TAB_LABELS = {
+  info: '대회 안내',
+  results: '경기 결과',
+  standings: '순위표',
+  awards: '시상',
+  teams: '참가팀',
+  register: '참가 신청',
+};
+
+function tabLabel(t, tab) {
+  if (tab === 'register') {
+    if (t && t.registration && t.registration.open) return '참가 신청';
+    return '등록 현황';
+  }
+  return DEFAULT_TAB_LABELS[tab] || '';
 }
 
 function firstAvailableTab(t) {
@@ -1356,6 +1397,7 @@ function renderTabs() {
     const tab = b.dataset.tab;
     const has = hasTabContent(t, tab);
     b.hidden = !has;
+    b.textContent = tabLabel(t, tab);
     const on = tab === currentTab;
     b.setAttribute('aria-selected', on ? 'true' : 'false');
     b.onclick = () => { currentTab = tab; renderTabs(); renderPanel(); };
@@ -1691,6 +1733,12 @@ function renderRegister(panel, t) {
   }
   panel.appendChild(intro);
 
+  // Closed registration → status view only (no subtabs, no forms)
+  if (!reg.open) {
+    panel.appendChild(renderStatusView(t));
+    return;
+  }
+
   const tabs = el('div', { class: 'reg-tabs' });
   const teamTab = el('button', { class: 'reg-tab', 'aria-selected': currentRegTab === 'team' ? 'true' : 'false', onclick: () => { currentRegTab = 'team'; renderPanel(); } }, '🏳️ 팀 참가 신청');
   const playerTab = el('button', { class: 'reg-tab', 'aria-selected': currentRegTab === 'player' ? 'true' : 'false', onclick: () => { currentRegTab = 'player'; renderPanel(); } }, '👤 선수 등록');
@@ -1818,6 +1866,11 @@ function renderStatusView(t) {
     '과 ',
     el('strong', {}, '선수'),
     ' 현황입니다. 선수는 개인정보 보호를 위해 이름·등번호만 표시됩니다.',
+    el('br'),
+    el('span', { class: 'wc-legend' }, [
+      el('span', { class: 'player-wc', style: 'margin-left:0' }, 'WC'),
+      ' 베테랑리그 와일드카드 (83년생 이하)',
+    ]),
   ]));
   const reloadBtn = el('button', {
     type: 'button',
@@ -1981,9 +2034,10 @@ function renderStatusData(body, t, data) {
       const playersGrid = el('div', { class: 'status-players' });
       unique.forEach(p => {
         const num = p.number ? String(p.number).trim() : '';
-        const chip = el('div', { class: 'player-chip' });
+        const chip = el('div', { class: 'player-chip' + (p.isWildcard ? ' wc' : '') });
         if (num) chip.appendChild(el('span', { class: 'player-num' + (veteran ? ' veteran' : '') }, num));
         chip.appendChild(el('span', { class: 'player-name' }, p.name || '-'));
+        if (p.isWildcard) chip.appendChild(el('span', { class: 'player-wc', title: '와일드카드 (83년생 이하)' }, 'WC'));
         playersGrid.appendChild(chip);
       });
       block.appendChild(playersGrid);
