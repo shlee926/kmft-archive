@@ -507,9 +507,10 @@ body {
   color: var(--fg);
 }
 .schedule-grid .sg-team {
-  overflow-wrap: anywhere;
+  word-break: keep-all;
+  overflow-wrap: break-word;
   min-width: 0;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 .schedule-grid .sg-team.home { text-align: right; }
 .schedule-grid .sg-team.away { text-align: left; }
@@ -652,7 +653,7 @@ body {
   gap: 10px;
   margin-top: 8px;
 }
-.team { font-weight: 500; font-size: 15px; min-width: 0; overflow-wrap: anywhere; line-height: 1.3; text-align: center; }
+.team { font-weight: 500; font-size: 15px; min-width: 0; word-break: keep-all; overflow-wrap: break-word; line-height: 1.3; text-align: center; }
 .score {
   font-family: var(--f-numeric);
   font-weight: 700;
@@ -1397,6 +1398,21 @@ function fmtDateTime(iso) {
   return `${base} ${timeStr}`;
 }
 
+// Insert zero-width space at natural break points so narrow mobile widths
+// break Korean team names at semantic boundaries (성남 / 베테랑, 건양의대 / OB)
+// instead of mid-syllable. Paired with CSS `word-break: keep-all`.
+const TEAM_NAME_BREAKS = {
+  '성남베테랑': '성남​베테랑',
+  '성남영맨': '성남​영맨',
+};
+function formatTeamName(name) {
+  if (!name) return '';
+  const mapped = TEAM_NAME_BREAKS[name];
+  if (mapped) return mapped;
+  // Generic: Korean prefix + Latin suffix (OB/YB/FC/FA) → insert break before suffix
+  return String(name).replace(/([가-힣]+)(OB|YB|FC|FA)(?=$|[^가-힣A-Za-z])/g, '$1​$2');
+}
+
 function leagueById(t, id) {
   return (t.leagues || []).find(l => l.id === id);
 }
@@ -1702,9 +1718,9 @@ function renderScheduleGrid(t) {
           if (m.time) topRow.appendChild(el('span', { class: 'sg-game-time' }, m.time));
           game.appendChild(topRow);
           const teams = el('div', { class: 'sg-game-teams' }, [
-            el('span', { class: 'sg-team home' }, m.home || '-'),
+            el('span', { class: 'sg-team home' }, formatTeamName(m.home) || '-'),
             el('span', { class: 'sg-vs' }, 'vs'),
-            el('span', { class: 'sg-team away' }, m.away || '-'),
+            el('span', { class: 'sg-team away' }, formatTeamName(m.away) || '-'),
           ]);
           game.appendChild(teams);
           td.appendChild(game);
@@ -1828,9 +1844,9 @@ function renderMatchCard(m, t) {
 
   const hasScore = m.homeScore != null && m.awayScore != null;
   const row = el('div', { class: 'match-row' });
-  row.appendChild(el('div', { class: 'team home' }, m.home));
+  row.appendChild(el('div', { class: 'team home' }, formatTeamName(m.home)));
   row.appendChild(el('div', { class: 'score' + (hasScore ? '' : ' pending') }, hasScore ? `${m.homeScore} : ${m.awayScore}` : 'VS'));
-  row.appendChild(el('div', { class: 'team away' }, m.away));
+  row.appendChild(el('div', { class: 'team away' }, formatTeamName(m.away)));
   card.appendChild(row);
 
   const hs = (m.homeScorers || []).map(fmtScorer).filter(Boolean);
@@ -1891,7 +1907,7 @@ function renderStandings(panel, t) {
       const gdCls = r.gd > 0 ? 'pos' : r.gd < 0 ? 'neg' : '';
       tr.innerHTML = `
         <td><span class="rank-medal ${medalCls}">${rank}</span></td>
-        <td class="team-cell">${escapeHtml(r.team)}${r.isMed ? '<span class="med-badge">의대생</span>' : ''}</td>
+        <td class="team-cell">${escapeHtml(formatTeamName(r.team))}${r.isMed ? '<span class="med-badge">의대생</span>' : ''}</td>
         <td class="num">${r.mp}</td><td class="num">${r.w}</td><td class="num">${r.d}</td><td class="num">${r.l}</td>
         <td class="num">${r.gf}</td><td class="num">${r.ga}</td>
         <td class="num gd ${gdCls}">${r.gd > 0 ? '+' : ''}${r.gd}</td>
@@ -1976,7 +1992,7 @@ function renderTeams(panel, t) {
     const medSet = new Set(lg.medStudentTeams || []);
     for (const tm of lg.teams || []) {
       const isMed = medSet.has(tm);
-      chips.appendChild(el('span', { class: 'team-chip' + (isMed ? ' med' : '') }, tm + (isMed ? ' · 의대생' : '')));
+      chips.appendChild(el('span', { class: 'team-chip' + (isMed ? ' med' : '') }, formatTeamName(tm) + (isMed ? ' · 의대생' : '')));
     }
     sec.appendChild(chips);
     panel.appendChild(sec);
@@ -2304,7 +2320,7 @@ function renderStatusData(body, t, data) {
       lgBlock.appendChild(el('div', { class: 'status-league-label' }, `${lg} · ${list.length}팀`));
       const chips = el('div', { class: 'teams-chips' });
       list.forEach(team => {
-        chips.appendChild(el('span', { class: 'team-chip' }, team.teamName || '-'));
+        chips.appendChild(el('span', { class: 'team-chip' }, formatTeamName(team.teamName) || '-'));
       });
       lgBlock.appendChild(chips);
       teamsSec.appendChild(lgBlock);
@@ -2364,7 +2380,7 @@ function renderStatusData(body, t, data) {
       });
       const block = el('div', { class: 'status-team-block' });
       block.appendChild(el('div', { class: 'status-team-head' }, [
-        el('span', { class: 'status-team-name' }, team),
+        el('span', { class: 'status-team-name' }, formatTeamName(team)),
         el('span', { class: 'status-team-count' }, `${unique.length}명`),
       ]));
       const playersGrid = el('div', { class: 'status-players' });
