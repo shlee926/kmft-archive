@@ -1985,6 +1985,12 @@ function renderRegister(panel, t) {
   const reg = t.registration || {};
   const email = reg.contactEmail || 'epiphany.h92@gmail.com';
 
+  // Closed registration → status view only (no intro, no deadlines, no subtabs, no forms)
+  if (!reg.open) {
+    panel.appendChild(renderStatusView(t));
+    return;
+  }
+
   const intro = el('div', { class: 'reg-intro' });
   const header = el('div', {}, [
     el('strong', {}, t.name),
@@ -2020,12 +2026,6 @@ function renderRegister(panel, t) {
     intro.appendChild(el('div', { class: 'reg-notes' }, reg.notes));
   }
   panel.appendChild(intro);
-
-  // Closed registration → status view only (no subtabs, no forms)
-  if (!reg.open) {
-    panel.appendChild(renderStatusView(t));
-    return;
-  }
 
   const tabs = el('div', { class: 'reg-tabs' });
   const teamTab = el('button', { class: 'reg-tab', 'aria-selected': currentRegTab === 'team' ? 'true' : 'false', onclick: () => { currentRegTab = 'team'; renderPanel(); } }, '🏳️ 팀 참가 신청');

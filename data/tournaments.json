@@ -282,7 +282,6 @@
       "registration": {
         "open": false,
         "contactEmail": "epiphany.h92@gmail.com",
-        "notes": "접수 마감 후 세부 일정·대진표·구장 안내도를 이 페이지에 업데이트합니다.",
         "apiEndpoint": "https://script.google.com/macros/s/AKfycbzE8f70KBIdvDykMIw3esLp_VjBYHtoMil-OJ14C7Y31kph9o8yN9P0NYYEMfdvk1lDbQ/exec",
         "teamDeadline": "2026-10-31",
         "playerDeadline": "2026-11-22T23:59",
