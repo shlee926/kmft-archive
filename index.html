@@ -401,6 +401,129 @@ body {
   object-fit: contain;
 }
 
+/* === Schedule Grid === */
+.schedule-grid-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.schedule-grid {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+.schedule-grid th, .schedule-grid td {
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--divider);
+  border-right: 1px solid var(--divider);
+  vertical-align: top;
+  text-align: center;
+}
+.schedule-grid th:last-child, .schedule-grid td:last-child { border-right: none; }
+.schedule-grid tr:last-child td { border-bottom: none; }
+.schedule-grid th {
+  background: var(--surface-2);
+  color: var(--fg-muted);
+  font-family: var(--f-numeric);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 1;
+}
+.schedule-grid .sg-round-h { width: 72px; }
+.schedule-grid .sg-round-c { width: 72px; background: var(--surface-2); }
+.schedule-grid .sg-round-label {
+  font-family: var(--f-numeric);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--fg);
+  letter-spacing: 0.04em;
+}
+.schedule-grid .sg-cell {
+  padding: 6px 6px;
+  min-width: 140px;
+}
+.schedule-grid .sg-empty {
+  color: var(--fg-muted);
+  font-size: 13px;
+  padding: 10px 0;
+}
+.schedule-grid .sg-game {
+  padding: 8px 10px;
+  margin: 2px 0;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  text-align: center;
+}
+.schedule-grid .sg-game.young {
+  border-left: 3px solid var(--young);
+}
+.schedule-grid .sg-game.veteran {
+  border-left: 3px solid var(--veteran);
+  background: color-mix(in oklab, var(--veteran) 6%, var(--bg));
+}
+.schedule-grid .sg-game-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  margin-bottom: 3px;
+  font-family: var(--f-numeric);
+  letter-spacing: 0.04em;
+}
+.schedule-grid .sg-game-label {
+  background: var(--surface-2);
+  color: var(--fg);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+.schedule-grid .sg-game.veteran .sg-game-label {
+  background: var(--veteran);
+  color: #fff;
+}
+.schedule-grid .sg-game.young .sg-game-label {
+  background: var(--young);
+  color: #fff;
+}
+.schedule-grid .sg-game-time { color: var(--fg); font-weight: 500; }
+.schedule-grid .sg-game-teams {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+  flex-wrap: wrap;
+}
+.schedule-grid .sg-team { overflow-wrap: anywhere; }
+.schedule-grid .sg-vs { color: var(--fg-muted); font-size: 11px; font-family: var(--f-numeric); }
+.sg-legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.sg-legend-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.sg-legend-chip.young { background: var(--young); }
+.sg-legend-chip.veteran { background: var(--veteran); }
+
 /* === Results === */
 .rounds { display: grid; gap: 28px; }
 .round {
@@ -1438,6 +1561,10 @@ function renderInfo(panel, t) {
     sec.appendChild(body);
     panel.appendChild(sec);
   }
+  if (t.matches && t.matches.length) {
+    const sec = renderScheduleGrid(t);
+    if (sec) panel.appendChild(sec);
+  }
   if (t.rules) {
     const sec = el('div', { class: 'info-section' });
     sec.appendChild(el('div', { class: 'info-head' }, [
@@ -1468,6 +1595,96 @@ function renderInfo(panel, t) {
   }
 }
 
+// 일정표 그리드: 라운드별로 구장 컬럼에 경기 배치
+function renderScheduleGrid(t) {
+  const matches = t.matches || [];
+  if (!matches.length) return null;
+
+  // 1) 구장 수집
+  const fieldSet = new Set();
+  matches.forEach(m => { if (m.field) fieldSet.add(m.field); });
+  const fields = [...fieldSet].sort((a, b) => {
+    const na = (a.match(/\d+/) || ['99'])[0] | 0;
+    const nb = (b.match(/\d+/) || ['99'])[0] | 0;
+    return na - nb;
+  });
+  if (fields.length < 2) return null;
+
+  // 2) 라운드별 그룹핑
+  const byRound = new Map();
+  matches.forEach(m => {
+    const k = m.roundOrder != null ? m.roundOrder : 999;
+    if (!byRound.has(k)) byRound.set(k, { round: m.round || '', matches: [] });
+    byRound.get(k).matches.push(m);
+  });
+
+  const sec = el('div', { class: 'info-section' });
+  sec.appendChild(el('div', { class: 'info-head' }, [
+    el('h2', {}, '📅 일정표'),
+  ]));
+
+  const wrap = el('div', { class: 'schedule-grid-wrap' });
+  const tbl = el('table', { class: 'schedule-grid' });
+
+  // 헤더: 라운드 | 구장1 | 구장2 ...
+  const thead = el('thead');
+  const hr = el('tr');
+  hr.appendChild(el('th', { class: 'sg-round-h' }, '라운드'));
+  fields.forEach(f => hr.appendChild(el('th', { class: 'sg-field-h' }, f)));
+  thead.appendChild(hr);
+  tbl.appendChild(thead);
+
+  const tbody = el('tbody');
+  const keys = [...byRound.keys()].sort((a, b) => a - b);
+  for (const k of keys) {
+    const grp = byRound.get(k);
+    const tr = el('tr');
+    // 라운드 셀: 라벨 + 시간 범위
+    const times = grp.matches.map(m => m.time).filter(Boolean);
+    const timeHtml = times.length ? times.sort().filter((v, i, a) => a.indexOf(v) === i).join('<br>') : '';
+    const roundTd = el('td', { class: 'sg-round-c' });
+    roundTd.appendChild(el('div', { class: 'sg-round-label' }, grp.round || `R${k}`));
+    tr.appendChild(roundTd);
+
+    // 구장별 셀
+    fields.forEach(field => {
+      const fieldMatches = grp.matches.filter(m => m.field === field);
+      const td = el('td', { class: 'sg-cell' });
+      if (!fieldMatches.length) {
+        td.appendChild(el('div', { class: 'sg-empty' }, '—'));
+      } else {
+        fieldMatches.forEach(m => {
+          const game = el('div', { class: 'sg-game' + (m.leagueId === 'veteran' ? ' veteran' : ' young') });
+          const topRow = el('div', { class: 'sg-game-top' });
+          if (m.gameLabel) topRow.appendChild(el('span', { class: 'sg-game-label' }, m.gameLabel));
+          if (m.time) topRow.appendChild(el('span', { class: 'sg-game-time' }, m.time));
+          game.appendChild(topRow);
+          const teams = el('div', { class: 'sg-game-teams' }, [
+            el('span', { class: 'sg-team' }, m.home || '-'),
+            el('span', { class: 'sg-vs' }, 'vs'),
+            el('span', { class: 'sg-team' }, m.away || '-'),
+          ]);
+          game.appendChild(teams);
+          td.appendChild(game);
+        });
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+  tbl.appendChild(tbody);
+  wrap.appendChild(tbl);
+
+  // 범례
+  const legend = el('div', { class: 'sg-legend' }, [
+    el('span', { class: 'sg-legend-chip young' }, '영맨'),
+    el('span', { class: 'sg-legend-chip veteran' }, '베테랑'),
+  ]);
+  sec.appendChild(wrap);
+  sec.appendChild(legend);
+  return sec;
+}
+
 function openLightbox(src) {
   const lb = document.getElementById('lightbox');
   document.getElementById('lightbox-img').src = src;
@@ -1495,10 +1712,20 @@ function renderResults(panel, t) {
     if (!byRound.has(key)) byRound.set(key, { round: m.round || '', time: m.time || '', matches: [] });
     byRound.get(key).matches.push(m);
   }
+  const fieldKey = (m) => {
+    const match = (m.field || '').match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 99;
+  };
   const container = el('div', { class: 'rounds' });
   const keys = [...byRound.keys()].sort((a, b) => a - b);
   for (const k of keys) {
     const grp = byRound.get(k);
+    // 구장 번호 오름차순, 같은 구장은 경기 시간 오름차순
+    grp.matches.sort((a, b) => {
+      const fa = fieldKey(a), fb = fieldKey(b);
+      if (fa !== fb) return fa - fb;
+      return (a.time || '').localeCompare(b.time || '');
+    });
     const roundEl = el('div', { class: 'round' });
     roundEl.appendChild(el('div', {}, [
       el('div', { class: 'round-label' }, grp.round || ''),
@@ -1933,6 +2160,29 @@ function renderStatusData(body, t, data) {
   const teams = data.teams || [];
   const players = data.players || [];
 
+  // Build league & team ordering from tournament's official league/team lists.
+  // Rule: 베테랑 league first, then 영맨; within each league, team order follows leagues[].teams order.
+  const leagueRank = {};    // leagueName (e.g. "베테랑") → 0 = first, 1 = second, ...
+  const teamOrder = {};     // teamName → { leagueRank, teamIdx, leagueName }
+  (t.leagues || []).forEach(lg => {
+    const nm = lg.name || lg.id;
+    const isVet = (lg.id === 'veteran') || (nm && nm.indexOf('베테랑') !== -1);
+    leagueRank[nm] = isVet ? 0 : 1;
+    (lg.teams || []).forEach((tm, idx) => {
+      teamOrder[tm] = { leagueRank: leagueRank[nm], teamIdx: idx, leagueName: nm };
+    });
+  });
+  const cmpTeam = (a, b) => {
+    const oa = teamOrder[a], ob = teamOrder[b];
+    if (oa && ob) {
+      if (oa.leagueRank !== ob.leagueRank) return oa.leagueRank - ob.leagueRank;
+      return oa.teamIdx - ob.teamIdx;
+    }
+    if (oa) return -1;  // known teams before unknown
+    if (ob) return 1;
+    return (a || '').localeCompare(b || '', 'ko');
+  };
+
   // Overview stats
   const stats = el('div', { class: 'status-stats' });
   const leagueCounts = {};
@@ -1948,7 +2198,10 @@ function renderStatusData(body, t, data) {
     el('div', { class: 'stat-label' }, '등록 선수 (중복 포함)'),
     el('div', { class: 'stat-value' }, String(players.length)),
   ]));
-  for (const [lg, cnt] of Object.entries(leagueCounts)) {
+  const lgEntries = Object.entries(leagueCounts).sort((a, b) =>
+    (leagueRank[a[0]] ?? 99) - (leagueRank[b[0]] ?? 99)
+  );
+  for (const [lg, cnt] of lgEntries) {
     stats.appendChild(el('div', { class: 'stat-card' }, [
       el('div', { class: 'stat-label' }, `${lg} 리그`),
       el('div', { class: 'stat-value' }, String(cnt)),
@@ -1962,13 +2215,17 @@ function renderStatusData(body, t, data) {
   if (!teams.length) {
     teamsSec.appendChild(el('div', { class: 'empty', style: 'padding:20px' }, '아직 신청한 팀이 없습니다.'));
   } else {
-    // Group by league
+    // Group by league, then order leagues (veteran first) and teams (by tournament order)
     const byLeague = {};
     teams.forEach(team => {
       const lg = (team.league || '').trim() || '미지정';
       (byLeague[lg] = byLeague[lg] || []).push(team);
     });
-    for (const [lg, list] of Object.entries(byLeague)) {
+    const leagueKeys = Object.keys(byLeague).sort((a, b) =>
+      (leagueRank[a] ?? 99) - (leagueRank[b] ?? 99)
+    );
+    for (const lg of leagueKeys) {
+      const list = byLeague[lg].slice().sort((a, b) => cmpTeam(a.teamName, b.teamName));
       const lgBlock = el('div', { class: 'status-league-block' });
       lgBlock.appendChild(el('div', { class: 'status-league-label' }, `${lg} · ${list.length}팀`));
       const chips = el('div', { class: 'teams-chips' });
@@ -2011,8 +2268,8 @@ function renderStatusData(body, t, data) {
       if (!name) return;
       (byTeam[team] = byTeam[team] || []).push(p);
     });
-    // Sort teams alphabetically, players within team by number asc then name
-    const teamNames = Object.keys(byTeam).sort((a, b) => a.localeCompare(b, 'ko'));
+    // Order teams: 베테랑 first then 영맨, each in tournament-defined order
+    const teamNames = Object.keys(byTeam).sort(cmpTeam);
     for (const team of teamNames) {
       const list = byTeam[team];
       const veteran = isVeteranOnly(team);
@@ -2020,6 +2277,11 @@ function renderStatusData(body, t, data) {
       const seen = new Map();
       list.forEach(p => seen.set((p.name || '').trim(), p));
       const unique = [...seen.values()].sort((a, b) => {
+        // Non-WC first, WC moved to the end
+        const wa = a.isWildcard ? 1 : 0;
+        const wb = b.isWildcard ? 1 : 0;
+        if (wa !== wb) return wa - wb;
+        // Within each group, number asc (missing numbers last), then name
         const na = parseInt(a.number, 10), nb = parseInt(b.number, 10);
         if (!isNaN(na) && !isNaN(nb)) return na - nb;
         if (!isNaN(na)) return -1;
