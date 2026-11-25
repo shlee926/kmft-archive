@@ -527,6 +527,42 @@ body {
 .sg-legend-chip.young { background: var(--young); }
 .sg-legend-chip.veteran { background: var(--veteran); }
 
+/* 원본 대진표 이미지 토글 */
+.schedule-images-toggle {
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.schedule-images-toggle summary {
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--fg);
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+.schedule-images-toggle summary::-webkit-details-marker { display: none; }
+.schedule-images-toggle summary::before {
+  content: '▶';
+  display: inline-block;
+  font-size: 10px;
+  color: var(--fg-muted);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+.schedule-images-toggle[open] summary::before { transform: rotate(90deg); }
+.schedule-images-toggle summary:hover { background: var(--surface-2); }
+.schedule-images-toggle > .venue-grid {
+  padding: 0 18px 18px;
+}
+
 /* === Results === */
 .rounds { display: grid; gap: 28px; }
 .round {
@@ -1685,6 +1721,28 @@ function renderScheduleGrid(t) {
   ]);
   sec.appendChild(wrap);
   sec.appendChild(legend);
+
+  // 원본 대진표·일정표 이미지 토글 (있는 경우)
+  if (t.scheduleImages && t.scheduleImages.length) {
+    const details = document.createElement('details');
+    details.className = 'schedule-images-toggle';
+    const summary = document.createElement('summary');
+    summary.innerHTML = '📷 <span>원본 대진표 및 일정표 이미지 보기</span>';
+    details.appendChild(summary);
+    const imgGrid = el('div', { class: 'venue-grid', style: 'margin-top:14px' });
+    for (const img of t.scheduleImages) {
+      const src = typeof img === 'string' ? img : img.src;
+      const caption = typeof img === 'string' ? '' : (img.caption || '');
+      const fig = el('figure', { class: 'venue-card' });
+      const im = el('img', { src, alt: caption, loading: 'lazy', onclick: () => openLightbox(src) });
+      fig.appendChild(im);
+      if (caption) fig.appendChild(el('figcaption', {}, caption));
+      imgGrid.appendChild(fig);
+    }
+    details.appendChild(imgGrid);
+    sec.appendChild(details);
+  }
+
   return sec;
 }
 
