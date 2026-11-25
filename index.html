@@ -464,7 +464,20 @@ body {
   color: var(--fg-muted);
   font-family: var(--f-numeric);
   letter-spacing: 0.04em;
+  white-space: nowrap;
 }
+.game-label {
+  font-family: var(--f-numeric);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  background: var(--surface-2);
+  color: var(--fg);
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+.match-time-sep { color: var(--divider); }
+.match-time { color: var(--fg); font-weight: 500; }
 .match-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -1468,7 +1481,16 @@ function renderMatchCard(m, t) {
   const head = el('div', { class: 'match-head' });
   head.appendChild(el('span', { class: 'league-dot', style: `background:${LEAGUE_COLORS[m.leagueId] || 'var(--fg-muted)'}` }));
   head.appendChild(el('span', { class: 'league-name' }, league?.name || m.leagueId || ''));
-  if (m.field) head.appendChild(el('span', { class: 'field-label' }, m.field));
+  if (m.gameLabel) head.appendChild(el('span', { class: 'game-label' }, m.gameLabel));
+  if (m.field || m.time) {
+    const metaRight = el('span', { class: 'field-label' });
+    if (m.field) metaRight.appendChild(document.createTextNode(m.field));
+    if (m.time) {
+      if (m.field) metaRight.appendChild(el('span', { class: 'match-time-sep' }, ' · '));
+      metaRight.appendChild(el('span', { class: 'match-time' }, m.time));
+    }
+    head.appendChild(metaRight);
+  }
   card.appendChild(head);
 
   const hasScore = m.homeScore != null && m.awayScore != null;

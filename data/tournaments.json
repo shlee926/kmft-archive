@@ -7,12 +7,280 @@
       "season": "fall",
       "year": 2026,
       "venue": "대전 안영생활체육공원",
-      "leagues": [],
-      "matches": [],
+      "leagues": [
+        {
+          "id": "young",
+          "name": "영맨",
+          "teams": [
+            "원대OB",
+            "성남YB",
+            "경상OB",
+            "건대OB",
+            "충대학생",
+            "영대학생",
+            "천안FC"
+          ],
+          "medStudentTeams": [
+            "충대학생",
+            "영대학생"
+          ]
+        },
+        {
+          "id": "veteran",
+          "name": "베테랑",
+          "teams": [
+            "성남",
+            "충청",
+            "FCM"
+          ]
+        }
+      ],
+      "matches": [
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:30-09:30",
+          "field": "2구장",
+          "leagueId": "young",
+          "home": "원대OB",
+          "away": "성남YB",
+          "gameLabel": "영1",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:30-09:30",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "경상OB",
+          "away": "건대OB",
+          "gameLabel": "영2",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:30-09:30",
+          "field": "4구장",
+          "leagueId": "young",
+          "home": "충대학생",
+          "away": "천안FC",
+          "gameLabel": "영3",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "10:00-11:00",
+          "field": "2구장",
+          "leagueId": "young",
+          "home": "원대OB",
+          "away": "경상OB",
+          "gameLabel": "영4",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "10:00-11:00",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "성남YB",
+          "away": "건대OB",
+          "gameLabel": "영5",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "10:00-11:00",
+          "field": "4구장",
+          "leagueId": "young",
+          "home": "영대학생",
+          "away": "천안FC",
+          "gameLabel": "영6",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "11:20-12:20",
+          "field": "2구장",
+          "leagueId": "young",
+          "home": "원대OB",
+          "away": "영대학생",
+          "gameLabel": "영7",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "11:20-12:20",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "성남YB",
+          "away": "경상OB",
+          "gameLabel": "영8",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "11:20-12:20",
+          "field": "4구장",
+          "leagueId": "young",
+          "home": "건대OB",
+          "away": "충대학생",
+          "gameLabel": "영9",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "12:50-13:50",
+          "field": "2구장",
+          "leagueId": "young",
+          "home": "원대OB",
+          "away": "천안FC",
+          "gameLabel": "영10",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "12:50-13:50",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "경상OB",
+          "away": "충대학생",
+          "gameLabel": "영11",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "12:50-13:50",
+          "field": "4구장",
+          "leagueId": "young",
+          "home": "건대OB",
+          "away": "영대학생",
+          "gameLabel": "영12",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 5,
+          "round": "5R",
+          "time": "14:10-15:10",
+          "field": "2구장",
+          "leagueId": "young",
+          "home": "성남YB",
+          "away": "천안FC",
+          "gameLabel": "영13",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 5,
+          "round": "5R",
+          "time": "14:10-15:10",
+          "field": "3구장",
+          "leagueId": "young",
+          "home": "충대학생",
+          "away": "영대학생",
+          "gameLabel": "영14",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 1,
+          "round": "1R",
+          "time": "08:55-09:30",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "성남",
+          "away": "충청",
+          "gameLabel": "베1",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 2,
+          "round": "2R",
+          "time": "10:00-10:35",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "충청",
+          "away": "FCM",
+          "gameLabel": "베2",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 3,
+          "round": "3R",
+          "time": "10:50-11:25",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "FCM",
+          "away": "성남",
+          "gameLabel": "베3",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 4,
+          "round": "4R",
+          "time": "12:55-13:30",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "성남",
+          "away": "충청",
+          "gameLabel": "베4",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 5,
+          "round": "5R",
+          "time": "13:45-14:20",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "충청",
+          "away": "FCM",
+          "gameLabel": "베5",
+          "homeScorers": [],
+          "awayScorers": []
+        },
+        {
+          "roundOrder": 5,
+          "round": "5R",
+          "time": "14:35-15:10",
+          "field": "1구장",
+          "leagueId": "veteran",
+          "home": "FCM",
+          "away": "성남",
+          "gameLabel": "베6",
+          "homeScorers": [],
+          "awayScorers": []
+        }
+      ],
       "awards": {},
-      "notice": "## 안내\n\n**2026 추계의사 축구대회** 참가 접수가 진행 중입니다.\n\n- **일시**: 2026년 11월 29일 (일)\n- **장소**: 대전 안영생활체육공원\n- **팀 참가 신청 마감**: 2026년 10월 31일 (토)\n- **선수 등록 마감**: 2026년 11월 22일 (일) 23:59까지\n- ⚠️ 선수 등록 기한 이후의 등록은 인정되지 않습니다\n- 참가팀 등록은 \"참가 신청\" 탭에서 가능합니다\n- 접수 마감 후 조편성·대진표·구장 안내도가 업데이트됩니다\n- 문의: 사무총장 김창환 / 홍보이사 이상훈",
+      "notice": "## 📋 대진표 & 일정표\n최종 대진표와 일정표는 아래 구장 안내도 섹션의 이미지를 참고해주세요.\n각 경기의 자세한 시간은 **경기 결과** 탭에서 확인할 수 있습니다.\n\n## ⏱ 경기 시간\n- **영맨**: 전반 25분 · 휴식 10분 · 후반 25분 (총 60분)\n- **베테랑**: 1쿼터 15분 · 휴식 5분 · 2쿼터 15분 (총 35분)\n\n## 🏆 리그 구성\n- **영맨 (7팀)**: A(원대OB), B(성남YB), C(경상OB), D(건대OB), E(충대학생), F(영대학생), G(천안FC)\n- **베테랑 (3팀)**: 가(성남), 나(충청), 다(FCM)\n\n## 📅 세부 일정 안내\n- **1R**: 08:30-09:30 (영맨) / 08:55-09:30 (베1)\n- **개회식**: 09:30-10:00\n- **2R**: 10:00-11:00 (영맨) / 10:00-10:35 (베2)\n- **3R**: 11:20-12:20 (영맨) / 10:50-11:25 (베3)\n- **점심시간**: 12:20-12:50\n- **4R**: 12:50-13:50 (영맨) / 12:55-13:30 (베4)\n- **5R**: 14:10-15:10 (영맨) / 13:45-14:20 (베5) / 14:35-15:10 (베6)\n- **폐회식 & 시상식**: 15:10-15:30\n\n## 📣 공지사항\n- 경기 시작 5분 전 하프라인 대기 부탁드립니다.\n- 유니폼 색상 유사 시 원정팀(대진표 뒤 팀)이 조끼 착용.\n- 신가드 미착용 시 출전 불가.\n\n## 🏅 시상\n우승 / 준우승 / MVP / 득점왕\n\n문의: 사무총장 김창환 / 홍보이사 이상훈",
       "registration": {
-        "open": true,
+        "open": false,
         "contactEmail": "epiphany.h92@gmail.com",
         "notes": "접수 마감 후 세부 일정·대진표·구장 안내도를 이 페이지에 업데이트합니다.",
         "apiEndpoint": "https://script.google.com/macros/s/AKfycbzE8f70KBIdvDykMIw3esLp_VjBYHtoMil-OJ14C7Y31kph9o8yN9P0NYYEMfdvk1lDbQ/exec",
@@ -20,7 +288,13 @@
         "playerDeadline": "2026-11-22T23:59",
         "lateRegistrationWarning": true
       },
-      "date": "2026-11-29"
+      "date": "2026-11-29",
+      "venueImages": [
+        {
+          "src": "assets/venues/2026-fall/bracket-schedule.png",
+          "caption": "최종 대진표 및 일정표 (대전 안영생활체육공원)"
+        }
+      ]
     },
     {
       "name": "2026 춘계의사 축구대회",
