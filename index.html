@@ -2201,7 +2201,7 @@ function renderOfficers(panel) {
       sec.appendChild(grp);
     }
     for (const n of term.notes || []) sec.appendChild(el('div', { class: 'off-src' }, n));
-    if (term.source) sec.appendChild(el('div', { class: 'off-src' }, `출처: 연맹 밴드 공지 (${term.source})`));
+    if (term.source) sec.appendChild(el('div', { class: 'off-src' }, `출처: ${term.source}`));
     panel.appendChild(sec);
   }
 }
