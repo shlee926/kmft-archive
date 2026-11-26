@@ -16,7 +16,8 @@
             },
             {
               "role": "사무총장",
-              "name": "김창환"
+              "name": "김창환",
+              "team": "FC Medicals"
             }
           ]
         },
@@ -25,7 +26,8 @@
           "members": [
             {
               "role": "총무이사",
-              "name": "박진욱"
+              "name": "박진욱",
+              "team": "FC Medicals"
             },
             {
               "role": "경기이사",
@@ -104,7 +106,8 @@
             },
             {
               "role": "재무이사",
-              "name": "박진욱"
+              "name": "박진욱",
+              "team": "FC Medicals"
             },
             {
               "role": "홍보이사",
