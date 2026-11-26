@@ -12,7 +12,8 @@
           "members": [
             {
               "role": "회장",
-              "name": "안용진"
+              "name": "안용진",
+              "team": "FC Medicals"
             },
             {
               "role": "사무총장",
