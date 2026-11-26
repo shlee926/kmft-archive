@@ -2239,7 +2239,7 @@ function renderRecords(panel) {
   if (recMode === 'all') {
     sec1.appendChild(teamGrid(tally(null), true));
     sec1.appendChild(el('div', { class: 'rec-note' },
-      '영맨·베테랑·왕중왕전(2014~2015, 연령 구분 전) 우승을 클럽 단위로 합산했습니다. 같은 클럽의 스쿼드는 하나로 셉니다 (예: SMU A·SMU YB·SMU 블루 → SMU, 성남Y → 성남, 부산의대·부산의대OB·부산대 → 부산, FCM → FC Medicals). 지역리그 우승은 넣지 않았습니다.'));
+      '영맨·베테랑·왕중왕전(2014~2015, 연령 구분 전) 우승을 클럽 단위로 합산했습니다. 같은 클럽의 스쿼드는 하나로 셉니다 (예: SMU A·SMU YB·SMU 블루 → SMU, 성남영맨·성남베테랑 → 성남, 부산의대·부산의대OB·부산대 → 부산, FCM → FC Medicals). 지역리그 우승은 넣지 않았습니다.'));
   } else {
     const cols = el('div', { class: 'rec-cols' });
     for (const [key, name] of [['young', '영맨'], ['veteran', '베테랑']]) {
@@ -2252,7 +2252,7 @@ function renderRecords(panel) {
     }
     sec1.appendChild(cols);
     sec1.appendChild(el('div', { class: 'rec-note' },
-      '같은 클럽의 스쿼드는 하나로 셉니다 (예: SMU A·SMU YB·SMU 블루 → SMU, 성남Y → 성남, 부산의대 → 부산). 2014~2015 왕중왕전은 연령 구분이 없던 대회라 ‘전체’에서만 셉니다.'));
+      '같은 클럽의 스쿼드는 하나로 셉니다 (예: SMU A·SMU YB·SMU 블루 → SMU, 성남영맨·성남베테랑 → 성남, 부산의대 → 부산). 2014~2015 왕중왕전은 연령 구분이 없던 대회라 ‘전체’에서만 셉니다.'));
   }
   panel.appendChild(sec1);
 

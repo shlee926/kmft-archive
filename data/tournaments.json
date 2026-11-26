@@ -1055,7 +1055,7 @@
           "id": "young",
           "name": "영맨",
           "teams": [
-            "성남Y",
+            "성남영맨",
             "건양대",
             "원주",
             "천안"
@@ -1065,7 +1065,7 @@
           "id": "veteran",
           "name": "베테랑",
           "teams": [
-            "성남",
+            "성남베테랑",
             "충청",
             "FC Medicals",
             "부산대"
@@ -1079,7 +1079,7 @@
           "time": "08:30-09:20",
           "field": "1구장",
           "leagueId": "veteran",
-          "home": "성남",
+          "home": "성남베테랑",
           "away": "충청",
           "homeScore": 1,
           "awayScore": 1,
@@ -1106,7 +1106,7 @@
           "field": "3구장",
           "leagueId": "young",
           "home": "건양대",
-          "away": "성남Y",
+          "away": "성남영맨",
           "homeScore": 1,
           "awayScore": 5,
           "homeScorers": [],
@@ -1131,7 +1131,7 @@
           "time": "10:00-10:50",
           "field": "2구장",
           "leagueId": "young",
-          "home": "성남Y",
+          "home": "성남영맨",
           "away": "천안",
           "homeScore": 5,
           "awayScore": 0,
@@ -1157,7 +1157,7 @@
           "time": "11:10-12:00",
           "field": "1구장",
           "leagueId": "veteran",
-          "home": "성남",
+          "home": "성남베테랑",
           "away": "부산대",
           "homeScore": 5,
           "awayScore": 2,
@@ -1183,7 +1183,7 @@
           "time": "11:10-12:00",
           "field": "3구장",
           "leagueId": "young",
-          "home": "성남Y",
+          "home": "성남영맨",
           "away": "원주",
           "homeScore": 3,
           "awayScore": 0,
@@ -1196,7 +1196,7 @@
           "time": "12:20-13:10",
           "field": "1구장",
           "leagueId": "veteran",
-          "home": "성남",
+          "home": "성남베테랑",
           "away": "FC Medicals",
           "homeScore": 1,
           "awayScore": 0,
@@ -1234,7 +1234,7 @@
         "young": {
           "title": "영맨 리그",
           "leagueKey": "young",
-          "champion": "성남Y",
+          "champion": "성남영맨",
           "runnerUp": "건양대",
           "topScorer": {
             "team": "건양대",
@@ -1250,10 +1250,10 @@
         "veteran": {
           "title": "베테랑 리그",
           "leagueKey": "veteran",
-          "champion": "성남",
+          "champion": "성남베테랑",
           "runnerUp": "충청",
           "topScorer": {
-            "team": "성남",
+            "team": "성남베테랑",
             "name": "탁권용",
             "number": 96,
             "wc": true
