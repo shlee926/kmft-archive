@@ -216,6 +216,25 @@ body {
   .tour-select { flex: 1 1 100%; max-width: none; }
 }
 .tabs[hidden] { display: none; }
+.off-term { margin-bottom: 36px; }
+.off-term-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.off-term-head h2 { font-size: 20px; margin: 0; }
+.off-term-head .period { color: var(--fg-muted); font-size: 13px; font-family: var(--f-numeric); }
+.off-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); }
+.off-group { margin-bottom: 14px; }
+.off-group-label { font-size: 12px; font-weight: 700; color: var(--fg-muted); letter-spacing: 0.04em; margin-bottom: 8px; }
+.off-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.off-card { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); padding: 12px 14px; }
+.off-card.lead { border-color: var(--accent); }
+.off-role { font-size: 12px; color: var(--fg-muted); font-weight: 600; }
+.off-name { font-size: 17px; font-weight: 700; margin-top: 2px; }
+.off-team { font-size: 12px; color: var(--fg-muted); margin-left: 6px; font-weight: 500; }
+.off-note { font-size: 11.5px; color: var(--fg-muted); margin-top: 4px; }
+.off-compact { display: flex; flex-wrap: wrap; gap: 6px; }
+.off-compact span { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--divider); background: var(--surface); }
+.off-compact b { font-weight: 700; margin-left: 4px; }
+.off-src { font-size: 12px; color: var(--fg-muted); margin-top: 6px; }
+@media (max-width: 560px) { .off-grid { grid-template-columns: 1fr 1fr; } .off-name { font-size: 15px; } }
 .tour-pill.records { font-weight: 700; }
 .tour-pill.records[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 
@@ -1607,6 +1626,9 @@ function render() {
 const SEASON_LABEL = { spring: '춘계', fall: '추계' };
 const PILL_COUNT = 3;
 const RECORDS_ID = 'records';
+const OFFICERS_ID = 'officers';
+let officersData = null;
+const isSpecialView = (id) => id === RECORDS_ID || id === OFFICERS_ID;
 let recMode = 'league'; // 'league' = 영맨·베테랑 나란히, 'all' = 클럽 합산
 
 function tourLabel(t) {
@@ -1635,8 +1657,14 @@ function renderTourPills() {
   if (!currentTournamentId || !tournaments[currentTournamentId]) {
     const h = (location.hash || '').replace('#', '');
     const firstHeld = list.find(t => t.status !== 'cancelled') || list[0];
-    currentTournamentId = (h && (tournaments[h] || h === RECORDS_ID)) ? h : firstHeld.id;
+    currentTournamentId = (h && (tournaments[h] || isSpecialView(h))) ? h : firstHeld.id;
   }
+  pills.appendChild(el('button', {
+    class: 'tour-pill records',
+    role: 'tab',
+    'aria-selected': currentTournamentId === OFFICERS_ID ? 'true' : 'false',
+    onclick: () => selectTournament(OFFICERS_ID),
+  }, '👥 임원진'));
   const recBtn = el('button', {
     class: 'tour-pill records',
     role: 'tab',
@@ -1661,7 +1689,7 @@ function renderTourPills() {
   const recentIds = new Set(recent.map(t => t.id));
   const older = list.filter(t => !recentIds.has(t.id));
   if (older.length) {
-    const inOlder = !recentIds.has(currentTournamentId) && currentTournamentId !== RECORDS_ID;
+    const inOlder = !recentIds.has(currentTournamentId) && !isSpecialView(currentTournamentId);
     const sel = el('select', {
       class: 'tour-select' + (inOlder ? ' active' : ''),
       'aria-label': '지난 대회 선택',
@@ -1687,6 +1715,12 @@ function renderTourPills() {
 function renderHero() {
   const hero = document.getElementById('hero');
   hero.innerHTML = '';
+  if (currentTournamentId === OFFICERS_ID) {
+    hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
+    hero.appendChild(el('h1', { class: 'hero-title' }, '임원진'));
+    hero.appendChild(el('div', { class: 'hero-meta' }, el('span', {}, '현 집행부와 역대 임원진을 소개합니다.')));
+    return;
+  }
   if (currentTournamentId === RECORDS_ID) {
     hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
     hero.appendChild(el('h1', { class: 'hero-title' }, '역대 기록'));
@@ -1721,8 +1755,8 @@ function renderHero() {
 }
 
 function renderTabs() {
-  document.getElementById('tabs').hidden = currentTournamentId === RECORDS_ID;
-  if (currentTournamentId === RECORDS_ID) return;
+  document.getElementById('tabs').hidden = isSpecialView(currentTournamentId);
+  if (isSpecialView(currentTournamentId)) return;
   const t = tournaments[currentTournamentId];
   if (!currentTab || !hasTabContent(t, currentTab)) {
     currentTab = firstAvailableTab(t);
@@ -1742,6 +1776,7 @@ function renderPanel() {
   const panel = document.getElementById('panel');
   panel.innerHTML = '';
   if (currentTournamentId === RECORDS_ID) { renderRecords(panel); return; }
+  if (currentTournamentId === OFFICERS_ID) { renderOfficers(panel); return; }
   const t = tournaments[currentTournamentId];
   if (!t) return;
   if (currentTab === 'info') renderInfo(panel, t);
@@ -2131,6 +2166,44 @@ function formatPerson(p, showGoals) {
     return wrap;
   }
   return main;
+}
+
+// --- 임원진 ---
+function renderOfficers(panel) {
+  if (!officersData) { panel.appendChild(el('div', { class: 'empty' }, '임원진 정보를 불러오는 중입니다.')); return; }
+  if (officersData.intro) panel.appendChild(el('p', { class: 'rec-note', style: 'margin:0 0 24px;font-size:13px' }, officersData.intro));
+  for (const term of officersData.terms || []) {
+    const sec = el('div', { class: 'off-term' });
+    sec.appendChild(el('div', { class: 'off-term-head' }, [
+      el('h2', {}, term.title),
+      term.current ? el('span', { class: 'off-badge' }, '현재') : null,
+      term.period ? el('span', { class: 'period' }, term.period) : null,
+    ]));
+    for (const g of term.groups || []) {
+      const grp = el('div', { class: 'off-group' });
+      if (g.label) grp.appendChild(el('div', { class: 'off-group-label' }, g.label));
+      if (g.compact) {
+        const wrap = el('div', { class: 'off-compact' });
+        for (const m of g.members) wrap.appendChild(el('span', {}, [m.role, el('b', {}, m.name)]));
+        grp.appendChild(wrap);
+      } else {
+        const grid = el('div', { class: 'off-grid' });
+        for (const m of g.members) {
+          const lead = /^(회장|사무총장)$/.test(m.role);
+          grid.appendChild(el('div', { class: 'off-card' + (lead ? ' lead' : '') }, [
+            el('div', { class: 'off-role' }, m.role),
+            el('div', { class: 'off-name' }, [m.name, m.team ? el('span', { class: 'off-team' }, m.team) : null]),
+            m.note ? el('div', { class: 'off-note' }, m.note) : null,
+          ]));
+        }
+        grp.appendChild(grid);
+      }
+      sec.appendChild(grp);
+    }
+    for (const n of term.notes || []) sec.appendChild(el('div', { class: 'off-src' }, n));
+    if (term.source) sec.appendChild(el('div', { class: 'off-src' }, `출처: 연맹 밴드 공지 (${term.source})`));
+    panel.appendChild(sec);
+  }
 }
 
 // --- 역대 기록 ---
@@ -2909,6 +2982,10 @@ async function init() {
     tournaments = {};
     for (const t of list) if (t && t.id) tournaments[t.id] = t;
     render();
+    fetch('data/officers.json?v=' + Date.now())
+      .then(r => r.ok ? r.json() : null)
+      .then(j => { officersData = j; if (currentTournamentId === OFFICERS_ID) renderPanel(); })
+      .catch(e => console.error('Failed to load officers.json', e));
   } catch (e) {
     console.error('Failed to load tournaments.json', e);
     document.getElementById('panel').innerHTML = '';
@@ -2916,7 +2993,7 @@ async function init() {
   }
   window.addEventListener('hashchange', () => {
     const h = (location.hash || '').replace('#', '');
-    if (h && (tournaments[h] || h === RECORDS_ID) && h !== currentTournamentId) {
+    if (h && (tournaments[h] || isSpecialView(h)) && h !== currentTournamentId) {
       currentTournamentId = h;
       currentTab = null;
       render();
