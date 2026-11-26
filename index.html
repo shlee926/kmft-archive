@@ -1602,9 +1602,25 @@ function computeStandings(tournament, league) {
     else { teams[m.home].d++; teams[m.away].d++; teams[m.home].pts++; teams[m.away].pts++; }
   }
   const medSet = new Set(league.medStudentTeams || []);
-  const rows = Object.values(teams).map(r => ({ ...r, gd: r.gf - r.ga, isMed: medSet.has(r.team) }));
+  // excludedTeams: generalized "비순위 팀" with optional badge/reason per team
+  // e.g. [{team:"천안FC", badge:"준회원", reason:"준회원 참여로 순위·시상 제외"}]
+  const excludedInfo = {};
+  (league.medStudentTeams || []).forEach(t => {
+    excludedInfo[t] = { badge: '의대생', reason: '의대 학생 참가팀' };
+  });
+  (league.excludedTeams || []).forEach(e => {
+    const entry = typeof e === 'string' ? { team: e } : e;
+    excludedInfo[entry.team] = { badge: entry.badge || '비순위', reason: entry.reason };
+  });
+  const rows = Object.values(teams).map(r => ({
+    ...r,
+    gd: r.gf - r.ga,
+    isMed: medSet.has(r.team),
+    isExcluded: !!excludedInfo[r.team],
+    excludedBadge: (excludedInfo[r.team] || {}).badge || null,
+  }));
   rows.sort((a, b) => {
-    if (a.isMed !== b.isMed) return a.isMed ? 1 : -1;
+    if (a.isExcluded !== b.isExcluded) return a.isExcluded ? 1 : -1;
     if (b.pts !== a.pts) return b.pts - a.pts;
     if (b.gd !== a.gd) return b.gd - a.gd;
     if (b.gf !== a.gf) return b.gf - a.gf;
@@ -2089,15 +2105,15 @@ function renderStandings(panel, t) {
     const tbody = el('tbody');
     rows.forEach((r, i) => {
       const rank = i + 1;
-      const medalCls = (!r.isMed && rank === 1) ? 'g1'
-                      : (!r.isMed && rank === 2) ? 'g2'
-                      : (!r.isMed && rank === 3 && rows.length >= 5) ? 'g3'
+      const medalCls = (!r.isExcluded && rank === 1) ? 'g1'
+                      : (!r.isExcluded && rank === 2) ? 'g2'
+                      : (!r.isExcluded && rank === 3 && rows.length >= 5) ? 'g3'
                       : '';
       const tr = el('tr');
       const gdCls = r.gd > 0 ? 'pos' : r.gd < 0 ? 'neg' : '';
       tr.innerHTML = `
         <td><span class="rank-medal ${medalCls}">${rank}</span></td>
-        <td class="team-cell">${escapeHtml(formatTeamName(r.team))}${r.isMed ? '<span class="med-badge">의대생</span>' : ''}</td>
+        <td class="team-cell">${escapeHtml(formatTeamName(r.team))}${r.excludedBadge ? `<span class="med-badge">${escapeHtml(r.excludedBadge)}</span>` : ''}</td>
         <td class="num">${r.mp}</td><td class="num">${r.w}</td><td class="num">${r.d}</td><td class="num">${r.l}</td>
         <td class="num">${r.gf}</td><td class="num">${r.ga}</td>
         <td class="num gd ${gdCls}">${r.gd > 0 ? '+' : ''}${r.gd}</td>
@@ -2107,8 +2123,16 @@ function renderStandings(panel, t) {
     tbl.appendChild(tbody);
     wrap.appendChild(tbl);
     grp.appendChild(wrap);
-    grp.appendChild(el('div', { class: 'tiebreak-note' },
-      `순위 결정: 승점 → 득실차 → 다득점 → 승자승${(lg.medStudentTeams || []).length ? ` · ${lg.medStudentTeams.join(', ')}은(는) 의대 학생 참가팀으로 성적과 무관하게 최하위 처리` : ''}`));
+    // Build tiebreak note with exclusion reasons grouped by reason
+    const noteParts = ['순위 결정: 승점 → 득실차 → 다득점 → 승자승'];
+    if ((lg.medStudentTeams || []).length) {
+      noteParts.push(`${lg.medStudentTeams.join(', ')}은(는) 의대 학생 참가팀으로 성적과 무관하게 최하위 처리`);
+    }
+    (lg.excludedTeams || []).forEach(e => {
+      const entry = typeof e === 'string' ? { team: e } : e;
+      noteParts.push(`${entry.team}은(는) ${entry.reason || '순위·시상 제외'}`);
+    });
+    grp.appendChild(el('div', { class: 'tiebreak-note' }, noteParts.join(' · ')));
     panel.appendChild(grp);
   }
 }
@@ -2380,9 +2404,16 @@ function renderTeams(panel, t) {
     ]));
     const chips = el('div', { class: 'teams-chips' });
     const medSet = new Set(lg.medStudentTeams || []);
+    const excludedMap = {};
+    (lg.excludedTeams || []).forEach(e => {
+      const entry = typeof e === 'string' ? { team: e } : e;
+      excludedMap[entry.team] = entry.badge || '비순위';
+    });
     for (const tm of lg.teams || []) {
       const isMed = medSet.has(tm);
-      chips.appendChild(el('span', { class: 'team-chip' + (isMed ? ' med' : '') }, formatTeamName(tm) + (isMed ? ' · 의대생' : '')));
+      const excludedBadge = excludedMap[tm] || (isMed ? '의대생' : null);
+      const isExcluded = isMed || !!excludedMap[tm];
+      chips.appendChild(el('span', { class: 'team-chip' + (isExcluded ? ' med' : '') }, formatTeamName(tm) + (excludedBadge ? ` · ${excludedBadge}` : '')));
     }
     sec.appendChild(chips);
     panel.appendChild(sec);
