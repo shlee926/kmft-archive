@@ -2171,7 +2171,7 @@ function formatPerson(p, showGoals) {
 // --- 임원진 ---
 function renderOfficers(panel) {
   if (!officersData) { panel.appendChild(el('div', { class: 'empty' }, '임원진 정보를 불러오는 중입니다.')); return; }
-  if (officersData.intro) panel.appendChild(el('p', { class: 'rec-note', style: 'margin:0 0 24px;font-size:13px' }, officersData.intro));
+  if (officersData.intro) panel.appendChild(el('p', { class: 'rec-note', style: 'margin:0 0 24px;font-size:13px;white-space:pre-line' }, officersData.intro));
   for (const term of officersData.terms || []) {
     const sec = el('div', { class: 'off-term' });
     sec.appendChild(el('div', { class: 'off-term-head' }, [
