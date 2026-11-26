@@ -215,6 +215,47 @@ body {
   .tour-pills { flex: 1 1 0; min-width: 0; margin-left: 0; }
   .tour-select { flex: 1 1 100%; max-width: none; }
 }
+.tabs[hidden] { display: none; }
+.tour-pill.records { font-weight: 700; }
+.tour-pill.records[aria-selected="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+.rec-section { margin-bottom: 40px; }
+.rec-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.rec-head h2 { font-size: 20px; margin: 0; }
+.rec-head .sub { color: var(--fg-muted); font-size: 13px; }
+.rec-teams { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.rec-team {
+  border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface);
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;
+}
+.rec-team-top { display: flex; align-items: center; gap: 10px; }
+.rec-rank {
+  font-family: var(--f-numeric); font-weight: 700; font-size: 13px; width: 26px; height: 26px;
+  border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); color: var(--fg-muted); flex: none;
+}
+.rec-rank.top { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.rec-team-name { font-weight: 700; font-size: 16px; word-break: keep-all; }
+.rec-count { margin-left: auto; font-family: var(--f-numeric); font-weight: 700; font-size: 20px; }
+.rec-count small { font-size: 12px; color: var(--fg-muted); font-weight: 500; margin-left: 2px; }
+.rec-stars { color: #d4a017; letter-spacing: 2px; font-size: 15px; line-height: 1.2; word-break: break-all; }
+.rec-split { font-size: 12px; color: var(--fg-muted); }
+.rec-titles { display: flex; flex-wrap: wrap; gap: 4px; }
+.rec-chip {
+  font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--surface-2);
+  color: var(--fg); border: 1px solid var(--divider); cursor: pointer; white-space: nowrap;
+}
+.rec-chip:hover { border-color: var(--accent); }
+.rec-tbl td, .rec-tbl th { text-align: left; }
+.rec-tbl td { font-size: 13.5px; word-break: keep-all; }
+.rec-tbl td.t-name { font-weight: 700; white-space: nowrap; }
+.rec-tbl td.t-name button {
+  all: unset; cursor: pointer; border-bottom: 1px dashed var(--fg-muted);
+}
+.rec-tbl td.champ { font-weight: 700; }
+.rec-tbl td.muted, .rec-tbl .dash { color: var(--fg-muted); }
+.rec-tbl tr.group-start td { border-top: 2px solid var(--divider); }
+.rec-note { color: var(--fg-muted); font-size: 12px; margin-top: 10px; line-height: 1.6; }
 .cancel-badge {
   display: inline-flex;
   align-items: center;
@@ -1556,6 +1597,7 @@ function render() {
 
 const SEASON_LABEL = { spring: '춘계', fall: '추계' };
 const PILL_COUNT = 3;
+const RECORDS_ID = 'records';
 
 function tourLabel(t) {
   const base = t.shortName || t.name || t.id;
@@ -1583,8 +1625,15 @@ function renderTourPills() {
   if (!currentTournamentId || !tournaments[currentTournamentId]) {
     const h = (location.hash || '').replace('#', '');
     const firstHeld = list.find(t => t.status !== 'cancelled') || list[0];
-    currentTournamentId = (h && tournaments[h]) ? h : firstHeld.id;
+    currentTournamentId = (h && (tournaments[h] || h === RECORDS_ID)) ? h : firstHeld.id;
   }
+  const recBtn = el('button', {
+    class: 'tour-pill records',
+    role: 'tab',
+    'aria-selected': currentTournamentId === RECORDS_ID ? 'true' : 'false',
+    onclick: () => selectTournament(RECORDS_ID),
+  }, '🏆 역대 기록');
+  pills.appendChild(recBtn);
   // 최근 대회 몇 개만 pill로, 나머지는 '지난 대회' 선택 목록으로
   const recent = list.filter(t => t.status !== 'cancelled').slice(0, PILL_COUNT);
   for (const t of recent) {
@@ -1602,7 +1651,7 @@ function renderTourPills() {
   const recentIds = new Set(recent.map(t => t.id));
   const older = list.filter(t => !recentIds.has(t.id));
   if (older.length) {
-    const inOlder = !recentIds.has(currentTournamentId);
+    const inOlder = !recentIds.has(currentTournamentId) && currentTournamentId !== RECORDS_ID;
     const sel = el('select', {
       class: 'tour-select' + (inOlder ? ' active' : ''),
       'aria-label': '지난 대회 선택',
@@ -1628,6 +1677,12 @@ function renderTourPills() {
 function renderHero() {
   const hero = document.getElementById('hero');
   hero.innerHTML = '';
+  if (currentTournamentId === RECORDS_ID) {
+    hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
+    hero.appendChild(el('h1', { class: 'hero-title' }, '역대 기록'));
+    hero.appendChild(el('div', { class: 'hero-meta' }, el('span', {}, '기록이 남아 있는 대회의 우승·시상 결과를 모았습니다.')));
+    return;
+  }
   const t = tournaments[currentTournamentId];
   if (!t) {
     hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
@@ -1656,6 +1711,8 @@ function renderHero() {
 }
 
 function renderTabs() {
+  document.getElementById('tabs').hidden = currentTournamentId === RECORDS_ID;
+  if (currentTournamentId === RECORDS_ID) return;
   const t = tournaments[currentTournamentId];
   if (!currentTab || !hasTabContent(t, currentTab)) {
     currentTab = firstAvailableTab(t);
@@ -1674,6 +1731,7 @@ function renderTabs() {
 function renderPanel() {
   const panel = document.getElementById('panel');
   panel.innerHTML = '';
+  if (currentTournamentId === RECORDS_ID) { renderRecords(panel); return; }
   const t = tournaments[currentTournamentId];
   if (!t) return;
   if (currentTab === 'info') renderInfo(panel, t);
@@ -2063,6 +2121,136 @@ function formatPerson(p, showGoals) {
     return wrap;
   }
   return main;
+}
+
+// --- 역대 기록 ---
+// 같은 클럽의 다른 표기(스쿼드명·약칭)를 하나로 묶어 우승 횟수를 셉니다.
+const CLUB_ALIASES = {
+  'FCM': 'FC Medicals', 'FC메디칼스': 'FC Medicals', '메디칼스': 'FC Medicals',
+  '부산의대OB': '부산의대', '부산대': '부산의대',
+  '성남Y': '성남', '성남YB': '성남', '성남OB': '성남', '성남영맨': '성남', '성남베테랑': '성남',
+};
+// 전국대회 타이틀로 세는 리그 (지역리그는 표에만 표시)
+const TITLE_LEAGUES = { young: '영맨', veteran: '베테랑', final: '왕중왕전' };
+
+function leagueType(key) {
+  const k = String(key || '');
+  if (k.startsWith('young')) return 'young';
+  if (k.startsWith('veteran')) return 'veteran';
+  return k;
+}
+const LEAGUE_ORDER = { young: 0, veteran: 1, final: 2 };
+function cleanTeam(name) {
+  return String(name || '').replace(/\s*\((승부차기|추정|공동)\)\s*/g, '').trim();
+}
+function clubOf(name) {
+  const n = cleanTeam(name);
+  if (!n) return '';
+  if (CLUB_ALIASES[n]) return CLUB_ALIASES[n];
+  if (/^SMU/i.test(n.replace(/\s/g, ''))) return 'SMU';
+  return n;
+}
+function seasonShort(t) { return t.shortName || `${t.year} ${SEASON_LABEL[t.season] || ''}`; }
+
+function personText(p) {
+  if (!p) return '';
+  if (typeof p === 'string') return p;
+  const name = (p.name || '') + (p.goals != null ? ` (${p.goals}골)` : '');
+  return p.team ? `${name} · ${p.team}` : name;
+}
+
+function renderRecords(panel) {
+  const held = Object.values(tournaments)
+    .filter(t => t.status !== 'cancelled' && t.awards && Object.keys(t.awards).length)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const today = new Date().toISOString().slice(0, 10);
+
+  // 1) 팀별 우승 횟수
+  const clubs = new Map();
+  for (const t of held) {
+    for (const [k, a] of Object.entries(t.awards)) {
+      const key = leagueType(a.leagueKey || k);
+      if (!TITLE_LEAGUES[key] || !a.champion) continue;
+      const club = clubOf(a.champion);
+      if (!club) continue;
+      if (!clubs.has(club)) clubs.set(club, { club, titles: [], split: {} });
+      const c = clubs.get(club);
+      c.titles.push({ t, league: TITLE_LEAGUES[key], raw: cleanTeam(a.champion) });
+      c.split[TITLE_LEAGUES[key]] = (c.split[TITLE_LEAGUES[key]] || 0) + 1;
+    }
+  }
+  const ranked = [...clubs.values()].sort((a, b) =>
+    b.titles.length - a.titles.length ||
+    (b.titles[0].t.date || '').localeCompare(a.titles[0].t.date || '') ||
+    a.club.localeCompare(b.club, 'ko'));
+
+  const sec1 = el('div', { class: 'rec-section' });
+  sec1.appendChild(el('div', { class: 'rec-head' }, [
+    el('h2', {}, '팀별 우승 횟수'),
+    el('span', { class: 'sub' }, '★ = 우승 1회 · 영맨·베테랑·왕중왕전 기준'),
+  ]));
+  const grid = el('div', { class: 'rec-teams' });
+  let prevCount = null, rank = 0;
+  ranked.forEach((c, i) => {
+    if (c.titles.length !== prevCount) { rank = i + 1; prevCount = c.titles.length; }
+    const card = el('div', { class: 'rec-team' });
+    card.appendChild(el('div', { class: 'rec-team-top' }, [
+      el('span', { class: 'rec-rank' + (rank === 1 ? ' top' : '') }, String(rank)),
+      el('span', { class: 'rec-team-name' }, c.club),
+      el('span', { class: 'rec-count' }, [String(c.titles.length), el('small', {}, '회')]),
+    ]));
+    card.appendChild(el('div', { class: 'rec-stars', 'aria-hidden': 'true' }, '★'.repeat(c.titles.length)));
+    card.appendChild(el('div', { class: 'rec-split' },
+      Object.entries(c.split).map(([k, v]) => `${k} ${v}`).join(' · ')));
+    const chips = el('div', { class: 'rec-titles' });
+    for (const x of c.titles) {
+      const label = `${seasonShort(x.t)} ${x.league}` + (x.raw !== c.club ? ` (${x.raw})` : '');
+      chips.appendChild(el('button', { class: 'rec-chip', onclick: () => selectTournament(x.t.id) }, label));
+    }
+    card.appendChild(chips);
+    grid.appendChild(card);
+  });
+  sec1.appendChild(grid);
+  sec1.appendChild(el('div', { class: 'rec-note' },
+    '같은 클럽의 스쿼드는 하나로 셉니다 (예: SMU A·SMU YB·SMU 블루 → SMU, 성남Y → 성남, 부산의대OB·부산대 → 부산의대, FCM → FC Medicals). 지역리그 우승은 횟수에 넣지 않았습니다.'));
+  panel.appendChild(sec1);
+
+  // 2) 역대 시상 결과 표
+  const sec2 = el('div', { class: 'rec-section' });
+  sec2.appendChild(el('div', { class: 'rec-head' }, [
+    el('h2', {}, '역대 시상 결과'),
+    el('span', { class: 'sub' }, `${held.length}개 대회 · 기록이 없는 칸은 –`),
+  ]));
+  const wrap = el('div', { class: 'standings-wrap' });
+  const tbl = el('table', { class: 'standings-tbl rec-tbl' });
+  tbl.innerHTML = '<thead><tr><th>대회</th><th>리그</th><th>우승</th><th>준우승</th><th>MVP</th><th>득점왕</th></tr></thead>';
+  const tbody = el('tbody');
+  const dash = () => el('span', { class: 'dash' }, '–');
+  for (const t of held) {
+    const entries = Object.entries(t.awards).sort(([ka, a], [kb, b]) =>
+      (LEAGUE_ORDER[leagueType(a.leagueKey || ka)] ?? 9) - (LEAGUE_ORDER[leagueType(b.leagueKey || kb)] ?? 9));
+    entries.forEach(([k, a], idx) => {
+      const tr = el('tr', { class: idx === 0 ? 'group-start' : '' });
+      const nameTd = el('td', { class: 't-name' });
+      if (idx === 0) nameTd.appendChild(el('button', { onclick: () => selectTournament(t.id) }, seasonShort(t)));
+      tr.appendChild(nameTd);
+      tr.appendChild(el('td', {}, (a.title || k).replace(/ 리그$/, '')));
+      tr.appendChild(el('td', { class: 'champ' }, a.champion ? `🏆 ${a.champion}` : dash()));
+      tr.appendChild(el('td', {}, a.runnerUp || dash()));
+      tr.appendChild(el('td', {}, a.mvp ? personText(a.mvp) : dash()));
+      tr.appendChild(el('td', {}, a.topScorer ? personText(a.topScorer) : dash()));
+      tbody.appendChild(tr);
+    });
+  }
+  tbl.appendChild(tbody);
+  wrap.appendChild(tbl);
+  sec2.appendChild(wrap);
+  const missing = Object.values(tournaments)
+    .filter(t => t.status !== 'cancelled' && !(t.awards && Object.keys(t.awards).length) && (t.date || '') < today)
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    .map(seasonShort);
+  if (missing.length) sec2.appendChild(el('div', { class: 'rec-note' }, `시상 기록이 아직 없는 대회: ${missing.join(', ')}`));
+  panel.appendChild(sec2);
 }
 
 // --- Teams ---
@@ -2687,7 +2875,7 @@ async function init() {
   }
   window.addEventListener('hashchange', () => {
     const h = (location.hash || '').replace('#', '');
-    if (h && tournaments[h] && h !== currentTournamentId) {
+    if (h && (tournaments[h] || h === RECORDS_ID) && h !== currentTournamentId) {
       currentTournamentId = h;
       currentTab = null;
       render();
