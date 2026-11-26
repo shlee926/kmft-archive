@@ -190,6 +190,45 @@ body {
   color: var(--accent-ink);
   border-color: var(--accent);
 }
+.tour-pill.cancelled {
+  color: var(--fg-muted);
+  border-style: dashed;
+  background: transparent;
+}
+.tour-select {
+  font-family: var(--f-numeric);
+  font-size: 13px;
+  padding: 6px 28px 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+  max-width: 300px;
+}
+.tour-select.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+@media (max-width: 560px) {
+  .topbar-inner > .brand { flex: 1 1 100%; }
+  .tour-pills { flex: 1 1 0; min-width: 0; margin-left: 0; }
+  .tour-select { flex: 1 1 100%; max-width: none; }
+}
+.cancel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  color: var(--fg-muted);
+  border: 1px dashed var(--border);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  margin-top: 12px;
+}
 .tour-pill .live-dot {
   display: inline-block;
   width: 6px; height: 6px;
@@ -1422,12 +1461,13 @@ function leagueById(t, id) {
 
 function hasTabContent(t, tab) {
   if (!t) return false;
+  if (t.status === 'cancelled') return tab === 'info' && !!t.notice;
   switch (tab) {
     case 'info':      return !!(t.notice || t.rules || (t.venueImages && t.venueImages.length));
     case 'results':   return !!(t.matches && t.matches.length);
-    case 'standings': return !!(t.matches && t.matches.length && t.leagues && t.leagues.length);
+    case 'standings': return !t.hideStandings && !!(t.matches && t.matches.length && t.leagues && t.leagues.length);
     case 'awards':    return !!(t.awards && Object.keys(t.awards).length);
-    case 'teams':     return !!(t.leagues && t.leagues.length);
+    case 'teams':     return !!(t.leagues && t.leagues.some(l => (l.teams || []).length));
     case 'register':  return !!(t.registration && (t.registration.open || t.registration.apiEndpoint));
   }
   return false;
@@ -1514,6 +1554,22 @@ function render() {
   renderPanel();
 }
 
+const SEASON_LABEL = { spring: '춘계', fall: '추계' };
+const PILL_COUNT = 3;
+
+function tourLabel(t) {
+  const base = t.shortName || t.name || t.id;
+  if (t.status === 'cancelled') return `${base} · 미개최${t.cancelReason ? ` (${t.cancelReason})` : ''}`;
+  return base;
+}
+
+function selectTournament(id) {
+  currentTournamentId = id;
+  currentTab = null; // reset to first available
+  try { location.hash = id; } catch {}
+  render();
+}
+
 function renderTourPills() {
   const pills = document.getElementById('tour-pills');
   pills.innerHTML = '';
@@ -1526,24 +1582,46 @@ function renderTourPills() {
   }
   if (!currentTournamentId || !tournaments[currentTournamentId]) {
     const h = (location.hash || '').replace('#', '');
-    currentTournamentId = (h && tournaments[h]) ? h : list[0].id;
+    const firstHeld = list.find(t => t.status !== 'cancelled') || list[0];
+    currentTournamentId = (h && tournaments[h]) ? h : firstHeld.id;
   }
-  for (const t of list) {
+  // 최근 대회 몇 개만 pill로, 나머지는 '지난 대회' 선택 목록으로
+  const recent = list.filter(t => t.status !== 'cancelled').slice(0, PILL_COUNT);
+  for (const t of recent) {
     const isOpen = t.registration && t.registration.open;
     const btn = el('button', {
       class: 'tour-pill',
       role: 'tab',
       'aria-selected': t.id === currentTournamentId ? 'true' : 'false',
-      onclick: () => {
-        currentTournamentId = t.id;
-        currentTab = null; // reset to first available
-        try { location.hash = t.id; } catch {}
-        render();
-      },
+      onclick: () => selectTournament(t.id),
     });
     if (isOpen) btn.appendChild(el('span', { class: 'live-dot', 'aria-label': '접수중' }));
     btn.appendChild(document.createTextNode(t.shortName || t.name || t.id));
     pills.appendChild(btn);
+  }
+  const recentIds = new Set(recent.map(t => t.id));
+  const older = list.filter(t => !recentIds.has(t.id));
+  if (older.length) {
+    const inOlder = !recentIds.has(currentTournamentId);
+    const sel = el('select', {
+      class: 'tour-select' + (inOlder ? ' active' : ''),
+      'aria-label': '지난 대회 선택',
+      onchange: (e) => { if (e.target.value) selectTournament(e.target.value); },
+    });
+    sel.appendChild(el('option', { value: '' }, `지난 대회 (${older.length})`));
+    const byYear = new Map();
+    for (const t of older) {
+      const y = t.year || (t.date || '').slice(0, 4);
+      if (!byYear.has(y)) byYear.set(y, []);
+      byYear.get(y).push(t);
+    }
+    for (const [y, ts] of byYear) {
+      const og = el('optgroup', { label: `${y}년` });
+      for (const t of ts) og.appendChild(el('option', { value: t.id }, tourLabel(t)));
+      sel.appendChild(og);
+    }
+    sel.value = inOlder ? currentTournamentId : '';
+    pills.appendChild(sel);
   }
 }
 
@@ -1560,9 +1638,14 @@ function renderHero() {
   hero.appendChild(el('div', { class: 'hero-eyebrow' }, '대한의사축구연맹'));
   hero.appendChild(el('h1', { class: 'hero-title' }, t.name));
   const meta = el('div', { class: 'hero-meta' });
-  if (t.date) meta.appendChild(el('span', {}, [el('span', { class: 'label' }, '일시'), el('b', {}, fmtDate(t.date))]));
+  if (t.status === 'cancelled') {
+    // 미개최: 날짜는 정렬용 값이라 표시하지 않음
+  } else if (t.dateLabel || t.date) meta.appendChild(el('span', {}, [el('span', { class: 'label' }, '일시'), el('b', {}, t.dateLabel || fmtDate(t.date))]));
   if (t.venue) meta.appendChild(el('span', {}, [el('span', { class: 'label' }, '장소'), el('b', {}, t.venue)]));
-  hero.appendChild(meta);
+  if (meta.childNodes.length) hero.appendChild(meta);
+  if (t.status === 'cancelled') {
+    hero.appendChild(el('div', { class: 'cancel-badge' }, `미개최${t.cancelReason ? ` · ${t.cancelReason}` : ''}`));
+  }
   if (t.registration && t.registration.open) {
     const badge = el('div', { class: 'registration-badge' }, [
       el('span', { class: 'dot' }),
@@ -1884,6 +1967,7 @@ function renderStandings(panel, t) {
   const leagues = t.leagues || [];
   if (!leagues.length) { panel.appendChild(el('div', { class: 'empty' }, '등록된 리그가 없습니다.')); return; }
   for (const lg of leagues) {
+    if (!(lg.teams || []).length) continue;
     const grp = el('div', { class: 'standings-group' });
     grp.appendChild(el('div', { class: 'standings-head' }, [
       el('span', { class: 'league-dot', style: `background:${LEAGUE_COLORS[lg.id] || 'var(--fg-muted)'}` }),
@@ -1986,6 +2070,7 @@ function renderTeams(panel, t) {
   const leagues = t.leagues || [];
   if (!leagues.length) { panel.appendChild(el('div', { class: 'empty' }, '참가팀 정보가 없습니다.')); return; }
   for (const lg of leagues) {
+    if (!(lg.teams || []).length) continue;
     const sec = el('div', { class: 'teams-section' });
     sec.appendChild(el('div', { class: 'standings-head' }, [
       el('span', { class: 'league-dot', style: `background:${LEAGUE_COLORS[lg.id] || 'var(--fg-muted)'}` }),
