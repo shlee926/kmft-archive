@@ -247,6 +247,15 @@ body {
 }
 .rec-chip:hover { border-color: var(--accent); }
 .rec-tbl td, .rec-tbl th { text-align: left; }
+.rec-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; padding: 2px; background: var(--surface); margin-left: auto; }
+.rec-toggle button {
+  all: unset; cursor: pointer; font-size: 13px; padding: 5px 12px; border-radius: 999px; color: var(--fg-muted); font-weight: 600;
+}
+.rec-toggle button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.rec-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.rec-cols .rec-teams { grid-template-columns: 1fr; }
+.rec-col-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; margin-bottom: 10px; }
+@media (max-width: 720px) { .rec-cols { grid-template-columns: 1fr; } }
 .rec-tbl td { font-size: 13.5px; word-break: keep-all; }
 .rec-tbl td.t-name { font-weight: 700; white-space: nowrap; }
 .rec-tbl td.t-name button {
@@ -1598,6 +1607,7 @@ function render() {
 const SEASON_LABEL = { spring: '춘계', fall: '추계' };
 const PILL_COUNT = 3;
 const RECORDS_ID = 'records';
+let recMode = 'league'; // 'league' = 영맨·베테랑 나란히, 'all' = 클럽 합산
 
 function tourLabel(t) {
   const base = t.shortName || t.name || t.id;
@@ -2166,53 +2176,84 @@ function renderRecords(panel) {
   const today = new Date().toISOString().slice(0, 10);
 
   // 1) 팀별 우승 횟수
-  const clubs = new Map();
-  for (const t of held) {
-    for (const [k, a] of Object.entries(t.awards)) {
-      const key = leagueType(a.leagueKey || k);
-      if (!TITLE_LEAGUES[key] || !a.champion) continue;
-      const club = clubOf(a.champion);
-      if (!club) continue;
-      if (!clubs.has(club)) clubs.set(club, { club, titles: [], split: {} });
-      const c = clubs.get(club);
-      c.titles.push({ t, league: TITLE_LEAGUES[key], raw: cleanTeam(a.champion) });
-      c.split[TITLE_LEAGUES[key]] = (c.split[TITLE_LEAGUES[key]] || 0) + 1;
+  // filter: null = 전체(클럽 합산, 왕중왕전 포함), 'young' / 'veteran' = 해당 리그만
+  const tally = (filter) => {
+    const clubs = new Map();
+    for (const t of held) {
+      for (const [k, a] of Object.entries(t.awards)) {
+        const key = leagueType(a.leagueKey || k);
+        if (!TITLE_LEAGUES[key] || !a.champion) continue;
+        if (filter && key !== filter) continue;
+        const club = clubOf(a.champion);
+        if (!club) continue;
+        if (!clubs.has(club)) clubs.set(club, { club, titles: [], split: {} });
+        const c = clubs.get(club);
+        c.titles.push({ t, league: TITLE_LEAGUES[key], raw: cleanTeam(a.champion) });
+        c.split[TITLE_LEAGUES[key]] = (c.split[TITLE_LEAGUES[key]] || 0) + 1;
+      }
     }
-  }
-  const ranked = [...clubs.values()].sort((a, b) =>
-    b.titles.length - a.titles.length ||
-    (b.titles[0].t.date || '').localeCompare(a.titles[0].t.date || '') ||
-    a.club.localeCompare(b.club, 'ko'));
+    return [...clubs.values()].sort((a, b) =>
+      b.titles.length - a.titles.length ||
+      (b.titles[0].t.date || '').localeCompare(a.titles[0].t.date || '') ||
+      a.club.localeCompare(b.club, 'ko'));
+  };
+  const teamGrid = (ranked, showSplit) => {
+    const grid = el('div', { class: 'rec-teams' });
+    let prevCount = null, rank = 0;
+    ranked.forEach((c, i) => {
+      if (c.titles.length !== prevCount) { rank = i + 1; prevCount = c.titles.length; }
+      const card = el('div', { class: 'rec-team' });
+      card.appendChild(el('div', { class: 'rec-team-top' }, [
+        el('span', { class: 'rec-rank' + (rank === 1 ? ' top' : '') }, String(rank)),
+        el('span', { class: 'rec-team-name' }, c.club),
+        el('span', { class: 'rec-count' }, [String(c.titles.length), el('small', {}, '회')]),
+      ]));
+      card.appendChild(el('div', { class: 'rec-stars', 'aria-hidden': 'true' }, '★'.repeat(c.titles.length)));
+      if (showSplit) card.appendChild(el('div', { class: 'rec-split' },
+        Object.entries(c.split).map(([k, v]) => `${k} ${v}`).join(' · ')));
+      const chips = el('div', { class: 'rec-titles' });
+      for (const x of c.titles) {
+        const label = `${seasonShort(x.t)}` + (showSplit ? ` ${x.league}` : '') + (x.raw !== c.club ? ` (${x.raw})` : '');
+        chips.appendChild(el('button', { class: 'rec-chip', onclick: () => selectTournament(x.t.id) }, label));
+      }
+      card.appendChild(chips);
+      grid.appendChild(card);
+    });
+    if (!ranked.length) grid.appendChild(el('div', { class: 'empty' }, '기록이 없습니다.'));
+    return grid;
+  };
 
   const sec1 = el('div', { class: 'rec-section' });
+  const toggle = el('div', { class: 'rec-toggle', role: 'group', 'aria-label': '집계 방식' });
+  [['league', '영맨 · 베테랑'], ['all', '전체 (클럽 합산)']].forEach(([mode, label]) => {
+    toggle.appendChild(el('button', {
+      'aria-pressed': recMode === mode ? 'true' : 'false',
+      onclick: () => { recMode = mode; renderPanel(); },
+    }, label));
+  });
   sec1.appendChild(el('div', { class: 'rec-head' }, [
     el('h2', {}, '팀별 우승 횟수'),
-    el('span', { class: 'sub' }, '★ = 우승 1회 · 영맨·베테랑·왕중왕전 기준'),
+    el('span', { class: 'sub' }, '★ = 우승 1회'),
+    toggle,
   ]));
-  const grid = el('div', { class: 'rec-teams' });
-  let prevCount = null, rank = 0;
-  ranked.forEach((c, i) => {
-    if (c.titles.length !== prevCount) { rank = i + 1; prevCount = c.titles.length; }
-    const card = el('div', { class: 'rec-team' });
-    card.appendChild(el('div', { class: 'rec-team-top' }, [
-      el('span', { class: 'rec-rank' + (rank === 1 ? ' top' : '') }, String(rank)),
-      el('span', { class: 'rec-team-name' }, c.club),
-      el('span', { class: 'rec-count' }, [String(c.titles.length), el('small', {}, '회')]),
-    ]));
-    card.appendChild(el('div', { class: 'rec-stars', 'aria-hidden': 'true' }, '★'.repeat(c.titles.length)));
-    card.appendChild(el('div', { class: 'rec-split' },
-      Object.entries(c.split).map(([k, v]) => `${k} ${v}`).join(' · ')));
-    const chips = el('div', { class: 'rec-titles' });
-    for (const x of c.titles) {
-      const label = `${seasonShort(x.t)} ${x.league}` + (x.raw !== c.club ? ` (${x.raw})` : '');
-      chips.appendChild(el('button', { class: 'rec-chip', onclick: () => selectTournament(x.t.id) }, label));
+  if (recMode === 'all') {
+    sec1.appendChild(teamGrid(tally(null), true));
+    sec1.appendChild(el('div', { class: 'rec-note' },
+      '영맨·베테랑·왕중왕전(2014~2015, 연령 구분 전) 우승을 클럽 단위로 합산했습니다. 같은 클럽의 스쿼드는 하나로 셉니다 (예: SMU A·SMU YB·SMU 블루 → SMU, 성남Y → 성남, 부산의대·부산의대OB·부산대 → 부산, FCM → FC Medicals). 지역리그 우승은 넣지 않았습니다.'));
+  } else {
+    const cols = el('div', { class: 'rec-cols' });
+    for (const [key, name] of [['young', '영맨'], ['veteran', '베테랑']]) {
+      const col = el('div');
+      col.appendChild(el('div', { class: 'rec-col-head' }, [
+        el('span', { class: 'league-dot', style: `background:${LEAGUE_COLORS[key]}` }), `${name} 리그`,
+      ]));
+      col.appendChild(teamGrid(tally(key), false));
+      cols.appendChild(col);
     }
-    card.appendChild(chips);
-    grid.appendChild(card);
-  });
-  sec1.appendChild(grid);
-  sec1.appendChild(el('div', { class: 'rec-note' },
-    '같은 클럽의 스쿼드는 하나로 셉니다 (예: SMU A·SMU YB·SMU 블루 → SMU, 성남Y → 성남, 부산의대·부산의대OB·부산대 → 부산, FCM → FC Medicals). 지역리그 우승은 횟수에 넣지 않았습니다.'));
+    sec1.appendChild(cols);
+    sec1.appendChild(el('div', { class: 'rec-note' },
+      '같은 클럽의 스쿼드는 하나로 셉니다 (예: SMU A·SMU YB·SMU 블루 → SMU, 성남Y → 성남, 부산의대 → 부산). 2014~2015 왕중왕전은 연령 구분이 없던 대회라 ‘전체’에서만 셉니다.'));
+  }
   panel.appendChild(sec1);
 
   // 2) 역대 시상 결과 표
