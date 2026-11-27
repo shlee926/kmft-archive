@@ -2719,7 +2719,7 @@ function renderStatusData(body, t, data) {
     el('div', { class: 'stat-value' }, String(teams.length)),
   ]));
   stats.appendChild(el('div', { class: 'stat-card' }, [
-    el('div', { class: 'stat-label' }, '등록 선수 (중복 포함)'),
+    el('div', { class: 'stat-label' }, '등록 선수'),
     el('div', { class: 'stat-value' }, String(players.length)),
   ]));
   const lgEntries = Object.entries(leagueCounts).sort((a, b) =>
