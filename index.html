@@ -2415,8 +2415,9 @@ function renderTeams(panel, t) {
     for (const tm of lg.teams || []) {
       const isMed = medSet.has(tm);
       const excludedBadge = excludedMap[tm] || (isMed ? '의대생' : null);
-      const isExcluded = isMed || !!excludedMap[tm];
-      chips.appendChild(el('span', { class: 'team-chip' + (isExcluded ? ' med' : '') }, formatTeamName(tm) + (excludedBadge ? ` · ${excludedBadge}` : '')));
+      // 흐리게 처리는 의대생팀(medSet)만 적용. 그 외 비순위 팀(ex. 준회원 천안FC)은
+      // 일반 테두리를 유지하고 배지만 표시.
+      chips.appendChild(el('span', { class: 'team-chip' + (isMed ? ' med' : '') }, formatTeamName(tm) + (excludedBadge ? ` · ${excludedBadge}` : '')));
     }
     sec.appendChild(chips);
     panel.appendChild(sec);
