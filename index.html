@@ -981,6 +981,7 @@ body {
   white-space: nowrap;
 }
 .team-chip.med { background: var(--surface-2); color: var(--fg-muted); }
+.team-chip .chip-badge-muted { color: var(--fg-muted); opacity: 0.7; }
 
 /* === Registration === */
 .reg-intro {
@@ -2415,9 +2416,17 @@ function renderTeams(panel, t) {
     for (const tm of lg.teams || []) {
       const isMed = medSet.has(tm);
       const excludedBadge = excludedMap[tm] || (isMed ? '의대생' : null);
-      // 흐리게 처리는 의대생팀(medSet)만 적용. 그 외 비순위 팀(ex. 준회원 천안FC)은
-      // 일반 테두리를 유지하고 배지만 표시.
-      chips.appendChild(el('span', { class: 'team-chip' + (isMed ? ' med' : '') }, formatTeamName(tm) + (excludedBadge ? ` · ${excludedBadge}` : '')));
+      // 흐리게 처리는 의대생팀(medSet)만 칩 전체에 적용.
+      // 그 외 비순위 팀(ex. 준회원 천안FC)은 일반 테두리 유지하고 배지 글자만 흐리게.
+      const chipChildren = [formatTeamName(tm)];
+      if (excludedBadge) {
+        if (isMed) {
+          chipChildren.push(` · ${excludedBadge}`);
+        } else {
+          chipChildren.push(el('span', { class: 'chip-badge-muted' }, ` · ${excludedBadge}`));
+        }
+      }
+      chips.appendChild(el('span', { class: 'team-chip' + (isMed ? ' med' : '') }, chipChildren));
     }
     sec.appendChild(chips);
     panel.appendChild(sec);
