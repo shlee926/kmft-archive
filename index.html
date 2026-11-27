@@ -1602,15 +1602,17 @@ function computeStandings(tournament, league) {
     else { teams[m.home].d++; teams[m.away].d++; teams[m.home].pts++; teams[m.away].pts++; }
   }
   const medSet = new Set(league.medStudentTeams || []);
-  // excludedTeams: generalized "비순위 팀" with optional badge/reason per team
-  // e.g. [{team:"천안FC", badge:"준회원", reason:"준회원 참여로 순위·시상 제외"}]
+  // excludedTeams: generalized "비순위 팀" with optional badge/reason/rankTier per team
+  // e.g. [{team:"천안FC", badge:"준회원", rankTier:1, reason:"..."}]
+  // rankTier: 0 = 정상 순위 팀, 1 = 중간 비순위 (ex. 준회원), 2 = 최하 (의대생팀)
   const excludedInfo = {};
   (league.medStudentTeams || []).forEach(t => {
-    excludedInfo[t] = { badge: '의대생', reason: '의대 학생 참가팀' };
+    excludedInfo[t] = { badge: '의대생', reason: '의대 학생 참가팀', tier: 2 };
   });
   (league.excludedTeams || []).forEach(e => {
     const entry = typeof e === 'string' ? { team: e } : e;
-    excludedInfo[entry.team] = { badge: entry.badge || '비순위', reason: entry.reason };
+    const tier = entry.rankTier != null ? entry.rankTier : 1;
+    excludedInfo[entry.team] = { badge: entry.badge || '비순위', reason: entry.reason, tier };
   });
   const rows = Object.values(teams).map(r => ({
     ...r,
@@ -1618,9 +1620,10 @@ function computeStandings(tournament, league) {
     isMed: medSet.has(r.team),
     isExcluded: !!excludedInfo[r.team],
     excludedBadge: (excludedInfo[r.team] || {}).badge || null,
+    rankTier: (excludedInfo[r.team] || {}).tier || 0,
   }));
   rows.sort((a, b) => {
-    if (a.isExcluded !== b.isExcluded) return a.isExcluded ? 1 : -1;
+    if (a.rankTier !== b.rankTier) return a.rankTier - b.rankTier;
     if (b.pts !== a.pts) return b.pts - a.pts;
     if (b.gd !== a.gd) return b.gd - a.gd;
     if (b.gf !== a.gf) return b.gf - a.gf;
