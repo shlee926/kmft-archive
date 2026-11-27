@@ -1372,7 +1372,62 @@ body {
   margin-left: 2px;
 }
 .player-chip.wc { background: color-mix(in oklab, var(--gold) 15%, var(--surface-2)); }
+.player-chip.dup {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 1px #f59e0b inset;
+  background: color-mix(in oklab, #f59e0b 10%, var(--surface));
+}
+.player-dup {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 6px;
+  background: #f59e0b;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
 .player-name { font-weight: 500; color: var(--fg); }
+.stat-card.dup {
+  border-color: #f59e0b;
+  background: color-mix(in oklab, #f59e0b 10%, var(--surface));
+}
+.stat-card.dup .stat-value { color: #b45309; }
+.status-dup-banner {
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  background: color-mix(in oklab, #f59e0b 10%, var(--surface));
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+}
+.dup-banner-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #b45309;
+  margin-bottom: 8px;
+}
+.dup-banner-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dup-banner-item {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.dup-banner-item .dup-name {
+  font-weight: 600;
+  min-width: 70px;
+  color: var(--fg);
+}
+.dup-banner-item .dup-teams {
+  color: var(--fg-muted);
+  word-break: keep-all;
+}
 .status-footer {
   margin-top: 20px;
   text-align: right;
@@ -2707,6 +2762,38 @@ function renderStatusData(body, t, data) {
     return (a || '').localeCompare(b || '', 'ko');
   };
 
+  // ---- Dedupe & duplicate detection ----
+  // Step 1: per-team dedupe by trimmed name (same person submitted twice to same team = 1)
+  const playersByTeamUnique = {};
+  players.forEach(p => {
+    const team = (p.teamName || '-').trim();
+    const name = (p.name || '').trim();
+    if (!name) return;
+    const seen = (playersByTeamUnique[team] = playersByTeamUnique[team] || new Map());
+    seen.set(name, p);   // last write wins (latest edit)
+  });
+  // Step 2: cross-team duplicate detection by trimmed name
+  // Key: normalized name. Value: [{team, player}]
+  const crossTeamMap = new Map();
+  for (const team of Object.keys(playersByTeamUnique)) {
+    for (const [name, p] of playersByTeamUnique[team].entries()) {
+      if (!crossTeamMap.has(name)) crossTeamMap.set(name, []);
+      crossTeamMap.get(name).push({ team, player: p });
+    }
+  }
+  const duplicateEntries = [...crossTeamMap.entries()]
+    .filter(([_, arr]) => arr.length > 1)
+    .map(([name, arr]) => ({ name, entries: arr }));
+  // Set of team+name strings that are flagged as duplicates (for highlighting chips)
+  const duplicateChipKeys = new Set();
+  duplicateEntries.forEach(d => d.entries.forEach(e => duplicateChipKeys.add(e.team + '|' + d.name)));
+  // Total unique players across all teams
+  const uniquePlayerCount = crossTeamMap.size;
+  // Total "person-team" rows (after per-team dedupe) — this is the headcount including cross-team duplicates
+  const totalRegistrationCount = [...crossTeamMap.values()].reduce((s, arr) => s + arr.length, 0);
+  // Duplicate person count (people registered to >1 team)
+  const duplicatePersonCount = duplicateEntries.length;
+
   // Overview stats
   const stats = el('div', { class: 'status-stats' });
   const leagueCounts = {};
@@ -2719,9 +2806,15 @@ function renderStatusData(body, t, data) {
     el('div', { class: 'stat-value' }, String(teams.length)),
   ]));
   stats.appendChild(el('div', { class: 'stat-card' }, [
-    el('div', { class: 'stat-label' }, '등록 선수 (중복 포함)'),
-    el('div', { class: 'stat-value' }, String(players.length)),
+    el('div', { class: 'stat-label' }, '등록 선수 (실인원)'),
+    el('div', { class: 'stat-value' }, String(uniquePlayerCount)),
   ]));
+  if (duplicatePersonCount > 0) {
+    stats.appendChild(el('div', { class: 'stat-card dup' }, [
+      el('div', { class: 'stat-label' }, '⚠️ 중복 등록'),
+      el('div', { class: 'stat-value' }, `${duplicatePersonCount}명`),
+    ]));
+  }
   const lgEntries = Object.entries(leagueCounts).sort((a, b) =>
     (leagueRank[a[0]] ?? 99) - (leagueRank[b[0]] ?? 99)
   );
@@ -2780,27 +2873,31 @@ function renderStatusData(body, t, data) {
   };
 
   const playersSec = el('div', { class: 'status-section' });
-  playersSec.appendChild(el('h3', { class: 'status-section-title' }, `👤 선수 등록 (${players.length}명)`));
+  playersSec.appendChild(el('h3', { class: 'status-section-title' }, `👤 선수 등록 (${uniquePlayerCount}명${totalRegistrationCount !== uniquePlayerCount ? ` · 등록행 ${totalRegistrationCount}` : ''})`));
+  // Duplicate banner: list names registered to multiple teams
+  if (duplicateEntries.length) {
+    const dupBanner = el('div', { class: 'status-dup-banner' });
+    dupBanner.appendChild(el('div', { class: 'dup-banner-title' },
+      `⚠️ 서로 다른 팀에 등록된 선수 ${duplicateEntries.length}명 — 동명이인일 수 있으니 확인 필요`));
+    const dupList = el('div', { class: 'dup-banner-list' });
+    duplicateEntries.sort((a, b) => a.name.localeCompare(b.name, 'ko')).forEach(d => {
+      const teamList = d.entries.map(e => formatTeamName(e.team)).join(' / ');
+      dupList.appendChild(el('div', { class: 'dup-banner-item' }, [
+        el('span', { class: 'dup-name' }, d.name),
+        el('span', { class: 'dup-teams' }, teamList),
+      ]));
+    });
+    dupBanner.appendChild(dupList);
+    playersSec.appendChild(dupBanner);
+  }
   if (!players.length) {
     playersSec.appendChild(el('div', { class: 'empty', style: 'padding:20px' }, '아직 등록된 선수가 없습니다.'));
   } else {
-    // Group by team, dedupe by (team + name) keeping the latest submitted entry
-    const byTeam = {};
-    players.forEach(p => {
-      const team = (p.teamName || '-').trim();
-      const name = (p.name || '').trim();
-      if (!name) return;
-      (byTeam[team] = byTeam[team] || []).push(p);
-    });
-    // Order teams: 베테랑 first then 영맨, each in tournament-defined order
-    const teamNames = Object.keys(byTeam).sort(cmpTeam);
+    // Use the pre-computed per-team-unique map from the stats section above.
+    const teamNames = Object.keys(playersByTeamUnique).sort(cmpTeam);
     for (const team of teamNames) {
-      const list = byTeam[team];
       const veteran = isVeteranOnly(team);
-      // Dedupe: same name → keep last occurrence (latest edit)
-      const seen = new Map();
-      list.forEach(p => seen.set((p.name || '').trim(), p));
-      const unique = [...seen.values()].sort((a, b) => {
+      const unique = [...playersByTeamUnique[team].values()].sort((a, b) => {
         // Non-WC first, WC moved to the end
         const wa = a.isWildcard ? 1 : 0;
         const wb = b.isWildcard ? 1 : 0;
@@ -2820,10 +2917,13 @@ function renderStatusData(body, t, data) {
       const playersGrid = el('div', { class: 'status-players' });
       unique.forEach(p => {
         const num = p.number ? String(p.number).trim() : '';
-        const chip = el('div', { class: 'player-chip' + (p.isWildcard ? ' wc' : '') });
+        const name = (p.name || '').trim();
+        const isDup = duplicateChipKeys.has(team + '|' + name);
+        const chip = el('div', { class: 'player-chip' + (p.isWildcard ? ' wc' : '') + (isDup ? ' dup' : '') });
         if (num) chip.appendChild(el('span', { class: 'player-num' + (veteran ? ' veteran' : '') }, num));
         chip.appendChild(el('span', { class: 'player-name' }, p.name || '-'));
         if (p.isWildcard) chip.appendChild(el('span', { class: 'player-wc', title: '와일드카드 (83년생 이하)' }, 'WC'));
+        if (isDup) chip.appendChild(el('span', { class: 'player-dup', title: '동명 선수가 다른 팀에도 등록됨' }, '중복'));
         playersGrid.appendChild(chip);
       });
       block.appendChild(playersGrid);
