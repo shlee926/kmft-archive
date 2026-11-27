@@ -494,6 +494,31 @@ body {
   border-top: 1px solid var(--divider);
 }
 
+/* Awards group photo (시상 탭 상단) */
+.awards-photo {
+  margin: 0 0 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.awards-photo img {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--surface-2);
+  cursor: zoom-in;
+}
+.awards-photo figcaption {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--fg-muted);
+  border-top: 1px solid var(--divider);
+  text-align: center;
+}
+
 /* Image lightbox */
 .lightbox {
   position: fixed; inset: 0;
@@ -2150,6 +2175,16 @@ function renderAwards(panel, t) {
   const awards = t.awards || {};
   const keys = Object.keys(awards);
   if (!keys.length) { panel.appendChild(el('div', { class: 'empty' }, '시상 결과가 아직 등록되지 않았습니다.')); return; }
+  // 상단 단체 사진 (awardsPhoto 필드가 있을 때)
+  if (t.awardsPhoto) {
+    const photo = t.awardsPhoto;
+    const src = typeof photo === 'string' ? photo : photo.src;
+    const caption = typeof photo === 'string' ? '' : (photo.caption || '');
+    const fig = el('figure', { class: 'awards-photo' });
+    fig.appendChild(el('img', { src, alt: caption, loading: 'lazy', onclick: () => openLightbox(src) }));
+    if (caption) fig.appendChild(el('figcaption', {}, caption));
+    panel.appendChild(fig);
+  }
   const container = el('div', { class: 'awards' });
   for (const k of keys) {
     const a = awards[k];
